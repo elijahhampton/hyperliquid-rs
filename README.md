@@ -28,8 +28,8 @@ hyperliquid-rs = "0.1"
 
 ## Current Status
 
-**Phase 2 Current Progress
-- [ ] Info API (Partially implemented)
+Phase 2 Current Progress
+- [x] Info API (Partially implemented)
 - [ ] Authentication & signing (EIP-712)
 - [ ] Exchange API
 - [ ] WS and Subscriptions

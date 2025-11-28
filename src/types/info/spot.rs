@@ -45,7 +45,7 @@ pub struct SpotAssetContext {
     pub prev_day_px: String,
 }
 
-pub type SpotMetaAndAssetContexts = (SpotMetadata, Vec<SpotAssetContext>);
+pub type SpotMetaAndAssetContexts = (SpotAssetContext, Vec<SpotMetadata>);
 
 /// Response type for POST /info with type "spotClearinghouseState"
 #[derive(Debug, Clone, Serialize, Deserialize)]

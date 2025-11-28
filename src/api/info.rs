@@ -1,15 +1,23 @@
-/// The info endpoint is used to fetch information about the exchange and specific users.
-
-use serde_json::json;
-use std::string::ToString;
 use crate::{
-    api::{request::post_json, response::err_from_status_code, SUPPORTED_INTERVALS},
+    api::{
+        current_time_millis, request::post_json, response::err_from_status_code, SUPPORTED_INTERVALS
+    },
     client::HyperliquidClient,
     error::Result,
-    types::info::{
-        user::{CandleSnapshotRequest, UserStakingHistory}, AlignedQuoteTokenInfo, AllMids, BuilderFeeApproval, CandleSnapshot, FrontendOpenOrders, L2BookSnapshot, OpenOrders, OrderId, OrderStatus, OrderWithStatus, TwapSliceFills, UserFees, UserFills, UserHistoricalOrders, UserRateLimits, UserReferralInformation, UserRole, UserStakingDelegations, UserStakingRewards, UserStakingSummary, UserSubAccounts, UserVaultDeposits
+    types::{
+        info::{
+            perpetual::{
+                ActiveAssetData, FundingHistory, FundingRate, LedgerUpdates,
+                PerpDeployAuctionStatus, PerpDexLimits, PerpetualDexs, PerpetualsMetadata,
+                PerpsAtOpenInterestCap, VenueFundings,
+            }, spot::{SpotAssetContext, SpotClearinghouseState, SpotDeployState, SpotMetaAndAssetContexts, SpotMetadata, SpotPairDeployAuctionStatus, TokenDetails}, user::{CandleSnapshotRequest, UserStakingHistory}, AlignedQuoteTokenInfo, AllMids, BuilderFeeApproval, CandleSnapshot, ClearinghouseState, FrontendOpenOrders, L2BookSnapshot, OpenOrders, OrderId, OrderStatus, OrderWithStatus, TwapSliceFills, UserFees, UserFills, UserHistoricalOrders, UserRateLimits, UserReferralInformation, UserRole, UserStakingDelegations, UserStakingRewards, UserStakingSummary, UserSubAccounts, UserVaultDeposits
+        },
+        ws::PerpDexState,
     },
 };
+/// The info endpoint is used to fetch information about the exchange and specific users.
+use serde_json::json;
+use std::string::ToString;
 
 /// The Info API: [`InfoApi`] covers all endpoint types requested with the /info path.
 ///
@@ -259,10 +267,7 @@ impl<'a> InfoApi<'a> {
     ///
     /// # Returns
     /// The most recent 5000 candles
-    pub async fn candle_snapshot(
-        &self,
-        req: CandleSnapshotRequest
-    ) -> Result<CandleSnapshot> {
+    pub async fn candle_snapshot(&self, req: CandleSnapshotRequest) -> Result<CandleSnapshot> {
         let payload = json!({
             "type": "candleSnapshot",
             "req": req
@@ -270,10 +275,10 @@ impl<'a> InfoApi<'a> {
 
         if !SUPPORTED_INTERVALS.contains(req.interval.as_str()) {
             return Err(crate::error::HyperliquidError::InvalidRequestParameter {
-                    method: "candle_snapshot".to_string(),
-                    parameter: "interval".to_string(),
-                    reason: format!("Expected one of: {:?}", SUPPORTED_INTERVALS),
-                });
+                method: "candle_snapshot".to_string(),
+                parameter: "interval".to_string(),
+                reason: format!("Expected one of: {:?}", SUPPORTED_INTERVALS),
+            });
         }
 
         self.post(payload).await
@@ -290,7 +295,7 @@ impl<'a> InfoApi<'a> {
     pub async fn check_builder_fee_approval(
         &self,
         user: String,
-        builder: String
+        builder: String,
     ) -> Result<BuilderFeeApproval> {
         let payload = json!({
             "type": "maxBuilderFee",
@@ -300,27 +305,30 @@ impl<'a> InfoApi<'a> {
 
         if user.len() != 42 {
             return Err(crate::error::HyperliquidError::InvalidRequestParameter {
-                    method: "check_builder_fee_approval".to_string(),
-                    parameter: "user".to_string(),
-                    reason: format!("Specified user parameter has incorrect length: {}", user.len()),
-                });
+                method: "check_builder_fee_approval".to_string(),
+                parameter: "user".to_string(),
+                reason: format!(
+                    "Specified user parameter has incorrect length: {}",
+                    user.len()
+                ),
+            });
         }
 
         if builder.len() != 42 {
             return Err(crate::error::HyperliquidError::InvalidRequestParameter {
-                    method: "check_builder_fee_approval".to_string(),
-                    parameter: "builder".to_string(),
-                    reason: format!("Specified builder parameter has incorrect length: {}", builder.len()),
-                });
+                method: "check_builder_fee_approval".to_string(),
+                parameter: "builder".to_string(),
+                reason: format!(
+                    "Specified builder parameter has incorrect length: {}",
+                    builder.len()
+                ),
+            });
         }
 
         self.post(payload).await
     }
 
-    pub async fn historical_orders(
-        &self,
-        user: String,
-    ) -> Result<UserHistoricalOrders> {
+    pub async fn historical_orders(&self, user: String) -> Result<UserHistoricalOrders> {
         let payload = json!({
             "type": "historicalOrders",
             "user": user
@@ -329,10 +337,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn twap_slice_fills(
-        &self,
-        user: String,
-    ) -> Result<TwapSliceFills> {
+    pub async fn twap_slice_fills(&self, user: String) -> Result<TwapSliceFills> {
         let payload = json!({
             "type": "userTwapSliceFills",
             "user": user
@@ -341,10 +346,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn subaccounts(
-        &self,
-        user: String,
-    ) -> Result<UserSubAccounts> {
+    pub async fn subaccounts(&self, user: String) -> Result<UserSubAccounts> {
         let payload = json!({
             "type": "subAccounts",
             "user": user
@@ -356,7 +358,7 @@ impl<'a> InfoApi<'a> {
     pub async fn vault_details(
         &self,
         vault_address: String,
-        user: Option<String>
+        user: Option<String>,
     ) -> Result<UserSubAccounts> {
         let mut payload = json!({
             "type": "vaultDetails",
@@ -370,10 +372,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn vault_deposits(
-        &self,
-        user: String
-    ) -> Result<UserVaultDeposits> {
+    pub async fn vault_deposits(&self, user: String) -> Result<UserVaultDeposits> {
         let payload = json!({
             "type": "vaultDeposits",
             "user": user
@@ -382,10 +381,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn role(
-        &self,
-        user: String
-    ) -> Result<UserRole> {
+    pub async fn role(&self, user: String) -> Result<UserRole> {
         let payload = json!({
             "type": "userRole",
             "user": user
@@ -394,10 +390,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn portfolio(
-        &self,
-        user: String
-    ) -> Result<UserRole> {
+    pub async fn portfolio(&self, user: String) -> Result<UserRole> {
         let payload = json!({
             "type": "portfolio",
             "user": user
@@ -406,10 +399,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn referral_information(
-        &self,
-        user: String
-    ) -> Result<UserReferralInformation> {
+    pub async fn referral_information(&self, user: String) -> Result<UserReferralInformation> {
         let payload = json!({
             "type": "referral",
             "user": user
@@ -418,10 +408,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-     pub async fn fees(
-        &self,
-        user: String
-    ) -> Result<UserFees> {
+    pub async fn fees(&self, user: String) -> Result<UserFees> {
         let payload = json!({
             "type": "userFees",
             "user": user
@@ -430,10 +417,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn staking_delegations(
-        &self,
-        user: String
-    ) -> Result<UserStakingDelegations> {
+    pub async fn staking_delegations(&self, user: String) -> Result<UserStakingDelegations> {
         let payload = json!({
             "type": "delegations",
             "user": user
@@ -442,10 +426,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn staking_summary(
-        &self,
-        user: String
-    ) -> Result<UserStakingSummary> {
+    pub async fn staking_summary(&self, user: String) -> Result<UserStakingSummary> {
         let payload = json!({
             "type": "delegatorSummary",
             "user": user
@@ -454,10 +435,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn staking_history(
-        &self,
-        user: String
-    ) -> Result<UserStakingHistory> {
+    pub async fn staking_history(&self, user: String) -> Result<UserStakingHistory> {
         let payload = json!({
             "type": "delegatorHistory",
             "user": user
@@ -466,10 +444,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn staking_rewards(
-        &self,
-        user: String
-    ) -> Result<UserStakingRewards> {
+    pub async fn staking_rewards(&self, user: String) -> Result<UserStakingRewards> {
         let payload = json!({
             "type": "delegatorRewards",
             "user": user
@@ -478,10 +453,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn hip3_dex_abstraction_state(
-        &self,
-        user: String
-    ) -> Result<UserStakingRewards> {
+    pub async fn hip3_dex_abstraction_state(&self, user: String) -> Result<UserStakingRewards> {
         let payload = json!({
             "type": "userDexAbstraction",
             "user": user
@@ -490,13 +462,238 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn aligned_quote_token_status(
-        &self,
-        user: String
-    ) -> Result<AlignedQuoteTokenInfo> {
+    pub async fn aligned_quote_token_status(&self, user: String) -> Result<AlignedQuoteTokenInfo> {
         let payload = json!({
             "type": "alignedQuoteTokenInfo",
             "user": user
+        });
+
+        self.post(payload).await
+    }
+
+    // Functions specific to Perpetuals
+
+    pub async fn perpetual_dexs(&self) -> Result<PerpetualDexs> {
+        let payload = json!({
+            "type": "perpDexs",
+        });
+
+        self.post(payload).await
+    }
+
+    pub async fn perpetuals_metadata(&self, dex: Option<String>) -> Result<PerpetualsMetadata> {
+        let payload = json!({
+            "type": "meta",
+            "dex": dex.unwrap_or("".to_string())
+        });
+
+        self.post(payload).await
+    }
+
+    pub async fn perpetuals_asset_contexts(&self) -> Result<PerpetualsMetadata> {
+        let payload = json!({
+            "type": "meta",
+        });
+
+        self.post(payload).await
+    }
+
+    pub async fn perpetuals_account_summary(
+        &self,
+        user: String,
+        dex: Option<String>,
+    ) -> Result<ClearinghouseState> {
+        let payload = json!({
+            "type": "clearinghouseState",
+            "user": user,
+            "dex": dex.unwrap_or("".to_string())
+        });
+
+        self.post(payload).await
+    }
+
+    pub async fn funding_history_updates(
+        &self,
+        user: String,
+        start_time: u64,
+        end_time: Option<u64>,
+    ) -> Result<LedgerUpdates> {
+        let mut payload = json!({
+            "type": "userFunding",
+            "user": user,
+            "startTime": start_time,
+        });
+
+        if let Some(end_time) = end_time {
+            payload["endTime"] = json!(end_time);
+        } else {
+            payload["endTime"] = json!(current_time_millis());
+        }
+
+        self.post(payload).await
+    }
+
+    pub async fn non_funding_ledger_updates(
+        &self,
+        user: String,
+        start_time: u64,
+        end_time: Option<u64>,
+    ) -> Result<LedgerUpdates> {
+        let mut payload = json!({
+            "type": "userNonFundingLedgerUpdates",
+            "user": user,
+            "startTime": start_time,
+        });
+
+        if let Some(end_time) = end_time {
+            payload["endTime"] = json!(end_time);
+        } else {
+            payload["endTime"] = json!(current_time_millis());
+        }
+
+        self.post(payload).await
+    }
+
+    pub async fn historical_funding_rates(
+        &self,
+        coin: String,
+        start_time: u64,
+        end_time: Option<u64>,
+    ) -> Result<FundingHistory> {
+        let mut payload = json!({
+            "type": "fundingHistory",
+            "coin": coin,
+            "startTime": start_time,
+        });
+
+        if let Some(end_time) = end_time {
+            payload["endTime"] = json!(end_time);
+        } else {
+            payload["endTime"] = json!(current_time_millis());
+        }
+
+        self.post(payload).await
+    }
+
+    pub async fn predicted_funding_rates_for_different_venues(&self) -> Result<VenueFundings> {
+        let payload = json!({
+            "type": "predictedFundings",
+        });
+
+        self.post(payload).await
+    }
+
+    pub async fn query_perps_at_open_interest_caps(&self) -> Result<PerpsAtOpenInterestCap> {
+        let payload = json!({
+            "type": "perpsAtOpenInterestCap",
+        });
+
+        self.post(payload).await
+    }
+
+    pub async fn perp_deploy_auction_information(&self) -> Result<PerpDeployAuctionStatus> {
+        let payload = json!({
+            "type": "perpDeployAuctionStatus",
+        });
+
+        self.post(payload).await
+    }
+
+    pub async fn active_asset_data(&self, user: String, coin: String) -> Result<ActiveAssetData> {
+        let payload = json!({
+            "type": "activeAssetData",
+            "user": json!(user),
+            "coin": json!(coin)
+        });
+
+        if user.len() != 42 {
+            return Err(crate::error::HyperliquidError::InvalidRequestParameter {
+                method: "active_asset_data".to_string(),
+                parameter: "user".to_string(),
+                reason: format!(
+                    "Specified user parameter has incorrect length: {}",
+                    user.len()
+                ),
+            });
+        }
+
+        self.post(payload).await
+    }
+
+    pub async fn builder_deployed_perp_market_limits(&self, dex: String) -> Result<PerpDexLimits> {
+        let payload = json!({
+            "type": "perpDexLimits",
+            "dex": json!(dex)
+        });
+
+        if dex.is_empty() {
+            return Err(crate::error::HyperliquidError::InvalidRequestParameter {
+                method: "builder_deployed_perp_market_limits".to_string(),
+                parameter: "dex".to_string(),
+                reason: format!("The empty string is not allowed."),
+            });
+        }
+
+        self.post(payload).await
+    }
+
+    pub async fn market_status(&self, dex: String) -> Result<PerpDexState> {
+        let payload = json!({
+            "type": "perpDexStatus",
+            "dex": json!(dex)
+        });
+
+        self.post(payload).await
+    }
+
+    // Functions specific to Spot
+
+    pub async fn spot_metadata(&self) -> Result<SpotMetadata> {
+        let payload = json!({
+            "type": "spotMeta",
+        });
+
+        self.post(payload).await
+    }
+
+
+    pub async fn spot_asset_context(&self) -> Result<SpotMetaAndAssetContexts> {
+        let payload = json!({
+            "type": "spotMetaAndAssetCtxs"
+        });
+
+        self.post(payload).await
+    }
+
+    pub async fn token_balances(&self, user: String) -> Result<SpotClearinghouseState> {
+        let payload = json!({
+            "type": "spotClearinghouseState",
+            "user": user
+        });
+
+        self.post(payload).await
+    }
+
+    pub async fn spot_deploy_auction_information(&self, user: String) -> Result<SpotDeployState> {
+        let payload = json!({
+            "type": "spotDeployState",
+            "user": user
+        });
+
+        self.post(payload).await
+    }
+
+     pub async fn spot_pair_deploy_auction_information(&self) -> Result<SpotPairDeployAuctionStatus> {
+        let payload = json!({
+            "type": "spotPairDeployAuctionStatus"
+        });
+
+        self.post(payload).await
+    }
+
+     pub async fn token_information(&self) -> Result<TokenDetails> {
+        let payload = json!({
+            "type": "tokenDetails"
         });
 
         self.post(payload).await

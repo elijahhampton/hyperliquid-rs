@@ -74,7 +74,6 @@ pub struct AssetContext {
 
 pub type MetaAndAssetContexts = (PerpetualsMetadata, Vec<AssetContext>);
 
-/// Response type for POST /info with type "clearinghouseState"
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CumulativeFunding {
@@ -127,6 +126,7 @@ pub struct MarginSummary {
     pub total_raw_usd: String,
 }
 
+/// Response type for POST /info with type "clearinghouseState"
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClearinghouseState {

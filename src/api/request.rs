@@ -4,6 +4,15 @@ use reqwest::{Client, Error, Response};
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 
+use std::time::{SystemTime, UNIX_EPOCH};
+
+pub fn current_time_millis() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("System time before UNIX epoch!")
+        .as_millis() as u64
+}
+
 pub static SUPPORTED_INTERVALS: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     [
         "1m", "3m", "5m", "15m", "30m",

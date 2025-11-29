@@ -2,6 +2,8 @@
 
 A unofficial Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perpetuals decentralized exchange. Built with type safety in mind and async-first architecture.
 
+⚠️ **Not suitable for production trading. This SDK is still under development.**
+
 ## Project Status
 
 - [x] Complete REST Info API (market data)

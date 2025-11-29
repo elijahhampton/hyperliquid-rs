@@ -1,6 +1,6 @@
 # hyperliquid-rs
 
-A production-grade Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perpetuals decentralized exchange. Built with type safety in mind and async-first architecture.
+A unofficial Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perpetuals decentralized exchange. Built with type safety in mind and async-first architecture.
 
 ## Project Status
 
@@ -22,15 +22,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = HyperliquidClient::builder()
         .testnet()
         .build()?;
-    
+
     // Get real-time mid prices for all assets
     let mids = client.info().get_all_mids().await?;
     println!("BTC: ${}", mids.get("BTC").unwrap());
-    
+
     // Fetch L2 orderbook snapshot
     let book = client.info().get_l2_book("ETH").await?;
     println!("Best bid: ${}", book.levels[0].px);
-    
+
     Ok(())
 }
 ```

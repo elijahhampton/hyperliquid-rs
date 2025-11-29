@@ -3,8 +3,8 @@ use once_cell::sync::Lazy;
 use reqwest::{Client, Error, Response};
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
-
 use std::time::{SystemTime, UNIX_EPOCH};
+use tracing;
 
 pub fn current_time_millis() -> u64 {
     SystemTime::now()
@@ -15,17 +15,18 @@ pub fn current_time_millis() -> u64 {
 
 pub static SUPPORTED_INTERVALS: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     [
-        "1m", "3m", "5m", "15m", "30m",
-        "1h", "2h", "4h", "8h", "12h",
-        "1d", "3d", "1w", "1M",
-    ].into_iter().collect()
+        "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "8h", "12h", "1d", "3d", "1w", "1M",
+    ]
+    .into_iter()
+    .collect()
 });
-
 
 pub async fn post_json<T>(client: &reqwest::Client, url: &str, body: serde_json::Value) -> Result<T>
 where
     T: serde::de::DeserializeOwned,
 {
+    tracing::trace!("Executing POST request with payload {:?}", body);
+
     let res = client
         .post(url)
         .json(&body)
@@ -43,5 +44,9 @@ where
             }
         })?;
 
-    Ok(res.json().await?)
+    let text = res.text().await?;
+    tracing::debug!("Server response: {}", text);
+
+    let json: T = serde_json::from_str(&text).unwrap();
+    Ok(json)
 }

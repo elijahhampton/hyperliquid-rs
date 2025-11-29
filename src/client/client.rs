@@ -1,10 +1,14 @@
-use std::sync::Arc;
-use crate::{api::info::InfoApi, error::{HyperliquidError, Result}};
+use crate::{
+    api::info::InfoApi,
+    client::HyperliquidClientBuilder,
+    error::{HyperliquidError, Result},
+};
 use reqwest::{Client, ClientBuilder};
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct HyperliquidClient {
-    inner: Arc<Inner>
+    inner: Arc<Inner>,
 }
 
 pub struct Inner {
@@ -14,12 +18,12 @@ pub struct Inner {
 
 impl Inner {
     pub fn new(base_url: String) -> Result<Self> {
-         let http_client = ClientBuilder::new().build()?;
+        let http_client = ClientBuilder::new().build()?;
 
-         Ok(Self {
+        Ok(Self {
             http_client,
-            base_url
-         })
+            base_url,
+        })
     }
 }
 
@@ -28,6 +32,10 @@ impl HyperliquidClient {
         let inner = Arc::new(Inner::new(base_url)?);
 
         Ok(Self { inner })
+    }
+
+    pub fn builder() -> HyperliquidClientBuilder {
+        HyperliquidClientBuilder::new()
     }
 
     pub fn http_client(&self) -> &Client {

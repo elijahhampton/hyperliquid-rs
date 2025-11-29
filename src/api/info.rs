@@ -1,16 +1,24 @@
 use crate::{
-    api::{
-        current_time_millis, request::post_json, response::err_from_status_code, SUPPORTED_INTERVALS
-    },
+    api::{SUPPORTED_INTERVALS, current_time_millis, request::post_json},
     client::HyperliquidClient,
     error::Result,
     types::{
         info::{
+            AlignedQuoteTokenInfo, AllMids, BuilderFeeApproval, CandleSnapshot, ClearinghouseState,
+            FrontendOpenOrders, L2BookSnapshot, OpenOrders, OrderId, OrderStatus, OrderWithStatus,
+            TwapSliceFills, UserFees, UserFills, UserHistoricalOrders, UserPortfolio,
+            UserRateLimits, UserReferralInformation, UserRole, UserStakingDelegations,
+            UserStakingRewards, UserStakingSummary, UserSubAccounts, UserVaultDeposits,
             perpetual::{
                 ActiveAssetData, FundingHistory, FundingRate, LedgerUpdates,
                 PerpDeployAuctionStatus, PerpDexLimits, PerpetualDexs, PerpetualsMetadata,
                 PerpsAtOpenInterestCap, VenueFundings,
-            }, spot::{SpotAssetContext, SpotClearinghouseState, SpotDeployState, SpotMetaAndAssetContexts, SpotMetadata, SpotPairDeployAuctionStatus, TokenDetails}, user::{CandleSnapshotRequest, UserStakingHistory}, AlignedQuoteTokenInfo, AllMids, BuilderFeeApproval, CandleSnapshot, ClearinghouseState, FrontendOpenOrders, L2BookSnapshot, OpenOrders, OrderId, OrderStatus, OrderWithStatus, TwapSliceFills, UserFees, UserFills, UserHistoricalOrders, UserRateLimits, UserReferralInformation, UserRole, UserStakingDelegations, UserStakingRewards, UserStakingSummary, UserSubAccounts, UserVaultDeposits
+            },
+            spot::{
+                SpotAssetContext, SpotClearinghouseState, SpotDeployState,
+                SpotMetaAndAssetContexts, SpotMetadata, SpotPairDeployAuctionStatus, TokenDetails,
+            },
+            user::{CandleSnapshotRequest, UserStakingHistory},
         },
         ws::PerpDexState,
     },
@@ -61,8 +69,14 @@ impl<'a> InfoApi<'a> {
 
     /// Retrieves mids for all coins.
     /// If the book is empty, the last trade price will be used as a fallback.
-    pub async fn all_mids(&self) -> Result<AllMids> {
-        self.post(json!({ "type": "allMids" })).await
+    pub async fn all_mids(&self, dex: Option<String>) -> Result<AllMids> {
+        let dex_param = dex.unwrap_or("".to_string());
+        let payload = json!({
+            "type": "allMids",
+            "dex": json!(dex_param)
+        });
+
+        self.post(payload).await
     }
 
     /// Retrieves a user's open orders.
@@ -147,7 +161,7 @@ impl<'a> InfoApi<'a> {
     /// [`UserFills`] containing the list of fills for a user.
     pub async fn fills_by_time(
         &self,
-        user: String,
+        user: &str,
         start_time: u64,
         end_time: Option<u64>,
         aggregate_by_time: Option<bool>,
@@ -176,7 +190,7 @@ impl<'a> InfoApi<'a> {
     ///
     /// # Returns
     /// The rate limits for for a user as [`UserRateLimits`].
-    pub async fn rate_limits(&self, user: String) -> Result<UserRateLimits> {
+    pub async fn rate_limits(&self, user: &str) -> Result<UserRateLimits> {
         let payload = json!({
             "type": "userRateLimit",
             "user": user,
@@ -221,7 +235,7 @@ impl<'a> InfoApi<'a> {
     /// Returns an L2 snapshot of the orderbook for the specified coin as [`L2BookSnapshot`].
     pub async fn l2_book_snapshot(
         &self,
-        coin: String,
+        coin: &str,
         n_sig_figs: Option<usize>,
         mantissa: Option<usize>,
     ) -> Result<L2BookSnapshot> {
@@ -294,8 +308,8 @@ impl<'a> InfoApi<'a> {
     /// An integer representing the maximum fee approved in tenths of a basis point (i.e. 1 means 0.001%).
     pub async fn check_builder_fee_approval(
         &self,
-        user: String,
-        builder: String,
+        user: &str,
+        builder: &str,
     ) -> Result<BuilderFeeApproval> {
         let payload = json!({
             "type": "maxBuilderFee",
@@ -328,7 +342,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn historical_orders(&self, user: String) -> Result<UserHistoricalOrders> {
+    pub async fn historical_orders(&self, user: &str) -> Result<UserHistoricalOrders> {
         let payload = json!({
             "type": "historicalOrders",
             "user": user
@@ -337,7 +351,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn twap_slice_fills(&self, user: String) -> Result<TwapSliceFills> {
+    pub async fn twap_slice_fills(&self, user: &str) -> Result<TwapSliceFills> {
         let payload = json!({
             "type": "userTwapSliceFills",
             "user": user
@@ -346,7 +360,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn subaccounts(&self, user: String) -> Result<UserSubAccounts> {
+    pub async fn subaccounts(&self, user: &str) -> Result<UserSubAccounts> {
         let payload = json!({
             "type": "subAccounts",
             "user": user
@@ -357,7 +371,7 @@ impl<'a> InfoApi<'a> {
 
     pub async fn vault_details(
         &self,
-        vault_address: String,
+        vault_address: &str,
         user: Option<String>,
     ) -> Result<UserSubAccounts> {
         let mut payload = json!({
@@ -372,16 +386,16 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn vault_deposits(&self, user: String) -> Result<UserVaultDeposits> {
+    pub async fn vault_deposits(&self, user: &str) -> Result<UserVaultDeposits> {
         let payload = json!({
-            "type": "vaultDeposits",
+            "type": "userVaultEquities",
             "user": user
         });
 
         self.post(payload).await
     }
 
-    pub async fn role(&self, user: String) -> Result<UserRole> {
+    pub async fn role(&self, user: &str) -> Result<UserRole> {
         let payload = json!({
             "type": "userRole",
             "user": user
@@ -390,7 +404,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn portfolio(&self, user: String) -> Result<UserRole> {
+    pub async fn portfolio(&self, user: &str) -> Result<UserPortfolio> {
         let payload = json!({
             "type": "portfolio",
             "user": user
@@ -399,7 +413,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn referral_information(&self, user: String) -> Result<UserReferralInformation> {
+    pub async fn referral_information(&self, user: &str) -> Result<UserReferralInformation> {
         let payload = json!({
             "type": "referral",
             "user": user
@@ -408,7 +422,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn fees(&self, user: String) -> Result<UserFees> {
+    pub async fn fees(&self, user: &str) -> Result<UserFees> {
         let payload = json!({
             "type": "userFees",
             "user": user
@@ -417,7 +431,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn staking_delegations(&self, user: String) -> Result<UserStakingDelegations> {
+    pub async fn staking_delegations(&self, user: &str) -> Result<UserStakingDelegations> {
         let payload = json!({
             "type": "delegations",
             "user": user
@@ -426,7 +440,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn staking_summary(&self, user: String) -> Result<UserStakingSummary> {
+    pub async fn staking_summary(&self, user: &str) -> Result<UserStakingSummary> {
         let payload = json!({
             "type": "delegatorSummary",
             "user": user
@@ -435,7 +449,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn staking_history(&self, user: String) -> Result<UserStakingHistory> {
+    pub async fn staking_history(&self, user: &str) -> Result<UserStakingHistory> {
         let payload = json!({
             "type": "delegatorHistory",
             "user": user
@@ -444,7 +458,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn staking_rewards(&self, user: String) -> Result<UserStakingRewards> {
+    pub async fn staking_rewards(&self, user: &str) -> Result<UserStakingRewards> {
         let payload = json!({
             "type": "delegatorRewards",
             "user": user
@@ -453,7 +467,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn hip3_dex_abstraction_state(&self, user: String) -> Result<UserStakingRewards> {
+    pub async fn hip3_dex_abstraction_state(&self, user: &str) -> Result<Option<bool>> {
         let payload = json!({
             "type": "userDexAbstraction",
             "user": user
@@ -462,7 +476,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn aligned_quote_token_status(&self, user: String) -> Result<AlignedQuoteTokenInfo> {
+    pub async fn aligned_quote_token_status(&self, user: &str) -> Result<AlignedQuoteTokenInfo> {
         let payload = json!({
             "type": "alignedQuoteTokenInfo",
             "user": user
@@ -656,7 +670,6 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-
     pub async fn spot_asset_context(&self) -> Result<SpotMetaAndAssetContexts> {
         let payload = json!({
             "type": "spotMetaAndAssetCtxs"
@@ -683,7 +696,9 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-     pub async fn spot_pair_deploy_auction_information(&self) -> Result<SpotPairDeployAuctionStatus> {
+    pub async fn spot_pair_deploy_auction_information(
+        &self,
+    ) -> Result<SpotPairDeployAuctionStatus> {
         let payload = json!({
             "type": "spotPairDeployAuctionStatus"
         });
@@ -691,7 +706,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-     pub async fn token_information(&self) -> Result<TokenDetails> {
+    pub async fn token_information(&self) -> Result<TokenDetails> {
         let payload = json!({
             "type": "tokenDetails"
         });

@@ -155,7 +155,14 @@ pub struct SpotFill {
 }
 
 /// Response for "userFills" request type.
-pub type UserFills = (PerpetualFill, SpotFill);
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum Fill {
+    Perp(PerpetualFill),
+    Spot(SpotFill),
+}
+
+pub type UserFills = Vec<Fill>;
 
 /// Request for "userFillsByTime" request type.
 #[derive(Debug, Serialize)]
@@ -206,7 +213,7 @@ pub struct UserRateLimits {
     pub n_requests_surplus: u64,
 }
 
-#[derive(Debug, Serialize, Deserialize,)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum OrderId {
     Numeric(u64),
@@ -225,6 +232,7 @@ pub struct OrderStatusRequest {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(untagged)]
 pub enum OrderWithStatus {
     Success {
         order: Order,
@@ -232,9 +240,9 @@ pub enum OrderWithStatus {
         #[serde(rename = "statusTimestamp")]
         status_timestamp: u64,
     },
-    MissingOrder {
-        status: String
-    }
+    UnknownOid {
+        status: String,
+    },
 }
 
 /// Response for request with type "orderStatus"
@@ -438,7 +446,7 @@ pub struct SubAccount {
 }
 
 /// Response for request with types "subAccounts"
-pub type UserSubAccounts = Vec<SubAccount>;
+pub type UserSubAccounts = Option<Vec<SubAccount>>;
 
 /// Request for request with type "vaultDetails"
 #[derive(Debug, Serialize)]
@@ -598,10 +606,15 @@ pub struct ReferrerState {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ReferrerData {
-    pub code: String,
-    #[serde(rename = "referralState")]
-    pub referral_states: Vec<ReferralState>,
+#[serde(untagged)]
+pub enum ReferrerData {
+    Ready {
+        code: String,
+        referralStates: Vec<ReferralState>,
+    },
+    NeedToTrade {
+        required: Decimal,
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -724,11 +737,12 @@ pub struct UserFees {
     #[serde(rename = "activeReferralDiscount")]
     pub active_referral_discount: Decimal,
     pub trial: Option<Decimal>,
-    pub fee_trial_reward: Decimal,
+    #[serde(rename = "feeTrialEscrow")]
+    pub fee_trial_escrow: Decimal,
     #[serde(rename = "nextTrialAvailableTimestamp")]
     pub next_trial_available_timestamp: Option<Decimal>,
     #[serde(rename = "stakingLink")]
-    pub staking_link: StakingLink,
+    pub staking_link: Option<StakingLink>,
     #[serde(rename = "activeStakingDiscount")]
     pub active_staking_discount: StakingDiscount,
 }

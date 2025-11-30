@@ -1,11 +1,17 @@
+use crate::error::Result;
 use crate::{
     api::request::post_json,
     client::HyperliquidClient,
     types::exchange::{
-        AgentEnableDexAbstractionAction, ApproveAgentAction, ApproveBuilderFeeAction, BatchModifyAction, CDepositAction, CWithdrawAction, CancelResponseData, DefaultResponse, ModifyAction, OrderAction, OrderResponse, ReserveRequestWeightAction, ScheduleCancelAction, SendAssetAction, TokenDelegateAction, TwapCancelAction, TwapCancelResponse, TwapOrderAction, TwapOrderResponse, TwapOrderResponseData, UpdateIsolatedMarginAction, UpdateLeverageAction, UsdClassTransferAction, UsdSendAction, UserDexAbstractionAction, ValidatorL1StreamAction, VaultTransferAction, WithdrawAction
+        AgentEnableDexAbstractionAction, ApproveAgentAction, ApproveBuilderFeeAction,
+        BatchModifyAction, CDepositAction, CWithdrawAction, CancelResponseData, DefaultResponse,
+        ModifyAction, OrderAction, OrderResponse, ReserveRequestWeightAction, ScheduleCancelAction,
+        SendAssetAction, TokenDelegateAction, TwapCancelAction, TwapCancelResponse,
+        TwapOrderAction, TwapOrderResponse, TwapOrderResponseData, UpdateIsolatedMarginAction,
+        UpdateLeverageAction, UsdClassTransferAction, UsdSendAction, UserDexAbstractionAction,
+        ValidatorL1StreamAction, VaultTransferAction, WithdrawAction,
     },
 };
-use crate::error::Result;
 use alloy::signers::Signature;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -254,7 +260,6 @@ impl<'a> ExchangeApi<'a> {
         self.post(payload).await
     }
 
-
     pub async fn core_usdc_transfer(
         &self,
         action: UsdSendAction,
@@ -269,7 +274,6 @@ impl<'a> ExchangeApi<'a> {
 
         self.post(payload).await
     }
-
 
     pub async fn initiate_withdrawal_request(
         &self,
@@ -286,7 +290,6 @@ impl<'a> ExchangeApi<'a> {
         self.post(payload).await
     }
 
-
     pub async fn transfer_to_or_from_spot_account_to_or_from_perp_account(
         &self,
         action: UsdClassTransferAction,
@@ -301,7 +304,6 @@ impl<'a> ExchangeApi<'a> {
 
         self.post(payload).await
     }
-
 
     pub async fn send_asset(
         &self,
@@ -318,7 +320,6 @@ impl<'a> ExchangeApi<'a> {
         self.post(payload).await
     }
 
-
     pub async fn deposit_into_staking(
         &self,
         action: CDepositAction,
@@ -334,7 +335,6 @@ impl<'a> ExchangeApi<'a> {
         self.post(payload).await
     }
 
-
     pub async fn withdraw_from_staking(
         &self,
         action: CWithdrawAction,
@@ -349,7 +349,6 @@ impl<'a> ExchangeApi<'a> {
 
         self.post(payload).await
     }
-
 
     pub async fn delegate_or_undelegate_from_validator(
         &self,
@@ -381,7 +380,6 @@ impl<'a> ExchangeApi<'a> {
         self.post(payload).await
     }
 
-
     pub async fn approve_an_api_wallet(
         &self,
         action: ApproveAgentAction,
@@ -396,7 +394,6 @@ impl<'a> ExchangeApi<'a> {
 
         self.post(payload).await
     }
-
 
     pub async fn approve_a_builder_fee(
         &self,
@@ -438,7 +435,6 @@ impl<'a> ExchangeApi<'a> {
         self.post(payload).await
     }
 
-
     pub async fn cancel_twap_order(
         &self,
         action: TwapCancelAction,
@@ -464,7 +460,6 @@ impl<'a> ExchangeApi<'a> {
         self.post(payload).await
     }
 
-
     pub async fn reserve_additional_actions(
         &self,
         action: ReserveRequestWeightAction,
@@ -485,7 +480,6 @@ impl<'a> ExchangeApi<'a> {
         self.post(payload).await
     }
 
-
     pub async fn invalidate_pending_nonce_noop(
         &self,
         nonce: u64,
@@ -505,7 +499,6 @@ impl<'a> ExchangeApi<'a> {
         self.post(payload).await
     }
 
-
     pub async fn enable_hip3_dex_abstraction(
         &self,
         action: UserDexAbstractionAction,
@@ -520,7 +513,6 @@ impl<'a> ExchangeApi<'a> {
 
         self.post(payload).await
     }
-
 
     pub async fn enable_hip3_dex_abstraction_agent(
         &self,
@@ -537,7 +529,6 @@ impl<'a> ExchangeApi<'a> {
         self.post(payload).await
     }
 
-
     pub async fn validator_vote_on_risk_free_rate_for_aligned_quote_asset(
         &self,
         action: ValidatorL1StreamAction,
@@ -552,5 +543,4 @@ impl<'a> ExchangeApi<'a> {
 
         self.post(payload).await
     }
-
 }

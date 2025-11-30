@@ -2,109 +2,38 @@
 name = "hyperliquid-rs"
 version = "0.1.0"
 edition = "2024"
+authors = ["Elijah Hampton:elijahhamptonj@proton.me"]
 
 [[example]]
-name = "all_mids"
-path = "examples/all_mids.rs"
+name = "account_status"
+path = "examples/account_status.rs"
 
 [[example]]
-name = "open_orders"
-path = "examples/open_orders.rs"
-
-
-[[example]]
-name = "open_orders_with_frontend_info"
-path = "examples/open_orders_with_frontend_info.rs"
+name = "perp_market_data"
+path = "examples/perp_market_data.rs"
 
 [[example]]
-name = "user_fills"
-path = "examples/user_fills.rs"
+name = "spot_market_data"
+path = "examples/spot_market_data.rs"
 
 [[example]]
-name = "user_rate_limits"
-path = "examples/user_rate_limits.rs"
-
-[[example]]
-name = "order_status_by_oid_or_cloid"
-path = "examples/order_status_by_oid_or_cloid.rs"
-
-[[example]]
-name = "l2_book_snapshot"
-path = "examples/l2_book_snapshot.rs"
-
-[[example]]
-name = "candle_snapshot"
-path = "examples/candle_snapshot.rs"
-
-[[example]]
-name = "check_builder_fee_approval"
-path = "examples/check_builder_fee_approval.rs"
-
-[[example]]
-name = "user_historical_orders"
-path = "examples/user_historical_orders.rs"
-
-[[example]]
-name = "user_twap_slice_fills"
-path = "examples/user_twap_slice_fills.rs"
-
-[[example]]
-name = "user_subaccounts"
-path = "examples/user_subaccounts.rs"
+name = "aligned_quote_token_status"
+path = "examples/aligned_quote_token_status.rs"
 
 [[example]]
 name = "vault_details"
 path = "examples/vault_details.rs"
 
 [[example]]
-name = "vault_deposits"
-path = "examples/vault_deposits.rs"
+name = "order_status_by_oid_or_cloid"
+path = "examples/order_status_by_oid_or_cloid.rs"
 
-[[example]]
-name = "user_role"
-path = "examples/user_role.rs"
-
-[[example]]
-name = "user_portfolio"
-path = "examples/user_portfolio.rs"
-
-[[example]]
-name = "user_referral_information"
-path = "examples/user_referral_information.rs"
-
-[[example]]
-name = "user_fees"
-path = "examples/user_fees.rs"
-
-[[example]]
-name = "user_staking_delegations"
-path = "examples/user_staking_delegations.rs"
-
-[[example]]
-name = "user_staking_summary"
-path = "examples/user_staking_summary.rs"
-
-[[example]]
-name = "user_staking_history"
-path = "examples/user_staking_history.rs"
-
-[[example]]
-name = "user_staking_rewards"
-path = "examples/user_staking_rewards.rs"
-
-[[example]]
-name = "user_dex_abstraction_state"
-path = "examples/user_dex_abstraction_state.rs"
-
-[[example]]
-name = "aligned_quote_token_status"
-path = "examples/aligned_quote_token_status.rs"
 
 [dependencies]
 alloy = "1.1.2"
 once_cell = "1.21.3"
 reqwest = { version = "0.12.24", features = ["json"] }
-rust_decimal = { version = "1.39.0", features = ["serde"] }
+rust_decimal = { version = "1.39.0", features = ["serde", "serde-float"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
 thiserror = "2.0.17"

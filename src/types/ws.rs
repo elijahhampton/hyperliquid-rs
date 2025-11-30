@@ -1,5 +1,4 @@
 /// Request and response types for WebSocket subscriptions and streaming data.
-
 use serde::{Deserialize, Serialize};
 
 /// WebSocket trade data
@@ -96,10 +95,18 @@ pub struct Candle {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum WsUserEvent {
-    Fills { fills: Vec<WsFill> },
-    Funding { funding: WsUserFunding },
-    Liquidation { liquidation: WsLiquidation },
-    NonUserCancel { non_user_cancel: Vec<WsNonUserCancel> },
+    Fills {
+        fills: Vec<WsFill>,
+    },
+    Funding {
+        funding: WsUserFunding,
+    },
+    Liquidation {
+        liquidation: WsLiquidation,
+    },
+    NonUserCancel {
+        non_user_cancel: Vec<WsNonUserCancel>,
+    },
 }
 
 /// WebSocket user fills with optional snapshot flag

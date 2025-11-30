@@ -1,9 +1,20 @@
+use rust_decimal::Decimal;
 /// Response types for the info endpoints that are specific to spot.
 /// Additional information for endpoint responses can be found
 /// here: https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/spot
-
-
 use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EvmContract {
+    address: String,
+    #[serde(
+        default,
+        alias = "evm_extra_wei_decimals",
+        alias = "evmExtraWeiDecimals"
+    )]
+    evm_extra_wei_decimals: i64,
+}
 
 /// Response type for POST /info with type "spotMeta"
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15,8 +26,9 @@ pub struct SpotToken {
     pub index: u32,
     pub token_id: String,
     pub is_canonical: bool,
-    pub evm_contract: Option<String>,
+    pub evm_contract: Option<EvmContract>,
     pub full_name: Option<String>,
+    pub deployer_trading_fee_share: Decimal,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -39,23 +51,23 @@ pub struct SpotMetadata {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SpotAssetContext {
-    pub day_ntl_vlm: String,
-    pub mark_px: String,
-    pub mid_px: String,
-    pub prev_day_px: String,
+    pub day_ntl_vlm: Decimal,
+    pub mark_px: Option<Decimal>,
+    pub mid_px: Option<Decimal>,
+    pub prev_day_px: Option<Decimal>,
 }
 
-pub type SpotMetaAndAssetContexts = (SpotAssetContext, Vec<SpotMetadata>);
+pub type SpotMetaAndAssetContexts = (SpotMetadata, Vec<SpotAssetContext>);
 
 /// Response type for POST /info with type "spotClearinghouseState"
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SpotBalance {
     pub coin: String,
-    pub token: u32,
-    pub hold: String,
-    pub total: String,
-    pub entry_ntl: String,
+    pub token: i64,
+    pub hold: Decimal,
+    pub total: Decimal,
+    pub entry_ntl: Decimal,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -76,17 +88,17 @@ pub struct TokenSpec {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DeployState {
-    pub token: u32,
+    pub token: i64,
     pub spec: TokenSpec,
     pub full_name: String,
     pub spots: Vec<u32>,
     pub max_supply: u64,
-    pub hyperliquidity_genesis_balance: String,
-    pub total_genesis_balance_wei: String,
+    pub hyperliquidity_genesis_balance: u64,
+    pub total_genesis_balance_wei: u64,
     /// Array of [address, balance] pairs
-    pub user_genesis_balances: Vec<(String, String)>,
+    pub user_genesis_balances: Vec<(String, Decimal)>,
     /// Array of [token_id, balance] pairs
-    pub existing_token_genesis_balances: Vec<(u32, String)>,
+    pub existing_token_genesis_balances: Vec<(i64, Decimal)>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -94,9 +106,9 @@ pub struct DeployState {
 pub struct GasAuction {
     pub start_time_seconds: u64,
     pub duration_seconds: u64,
-    pub start_gas: String,
-    pub current_gas: Option<String>,
-    pub end_gas: String,
+    pub start_gas: Decimal,
+    pub current_gas: Option<Decimal>,
+    pub end_gas: Decimal,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -112,9 +124,9 @@ pub struct SpotDeployState {
 pub struct SpotPairDeployAuctionStatus {
     pub start_time_seconds: u64,
     pub duration_seconds: u64,
-    pub start_gas: String,
-    pub current_gas: String,
-    pub end_gas: Option<String>,
+    pub start_gas: Decimal,
+    pub current_gas: Option<Decimal>,
+    pub end_gas: Option<Decimal>,
 }
 
 /// Response type for POST /info with type "tokenDetails"

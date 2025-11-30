@@ -10,9 +10,9 @@ use crate::{
             UserRateLimits, UserReferralInformation, UserRole, UserStakingDelegations,
             UserStakingRewards, UserStakingSummary, UserSubAccounts, UserVaultDeposits,
             perpetual::{
-                ActiveAssetData, FundingHistory, FundingRate, LedgerUpdates,
-                PerpDeployAuctionStatus, PerpDexLimits, PerpetualDexs, PerpetualsMetadata,
-                PerpsAtOpenInterestCap, VenueFundings,
+                ActiveAssetData, FundingHistory, FundingRate, LedgerUpdates, MetaAndAssetContexts,
+                PerpDeployAuctionStatus, PerpDexLimits, PerpDexStatus, PerpetualDexs,
+                PerpetualsMetadata, PerpsAtOpenInterestCap, VenueFundings,
             },
             spot::{
                 SpotAssetContext, SpotClearinghouseState, SpotDeployState,
@@ -495,18 +495,18 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn perpetuals_metadata(&self, dex: Option<String>) -> Result<PerpetualsMetadata> {
+    pub async fn perpetuals_metadata(&self, dex: Option<&str>) -> Result<PerpetualsMetadata> {
         let payload = json!({
             "type": "meta",
-            "dex": dex.unwrap_or("".to_string())
+            "dex": dex.unwrap_or("")
         });
 
         self.post(payload).await
     }
 
-    pub async fn perpetuals_asset_contexts(&self) -> Result<PerpetualsMetadata> {
+    pub async fn perpetuals_asset_contexts(&self) -> Result<MetaAndAssetContexts> {
         let payload = json!({
-            "type": "meta",
+            "type": "metaAndAssetCtxs",
         });
 
         self.post(payload).await
@@ -514,13 +514,13 @@ impl<'a> InfoApi<'a> {
 
     pub async fn perpetuals_account_summary(
         &self,
-        user: String,
-        dex: Option<String>,
+        user: &str,
+        dex: Option<&str>,
     ) -> Result<ClearinghouseState> {
         let payload = json!({
             "type": "clearinghouseState",
             "user": user,
-            "dex": dex.unwrap_or("".to_string())
+            "dex": dex.unwrap_or("")
         });
 
         self.post(payload).await
@@ -528,7 +528,7 @@ impl<'a> InfoApi<'a> {
 
     pub async fn funding_history_updates(
         &self,
-        user: String,
+        user: &str,
         start_time: u64,
         end_time: Option<u64>,
     ) -> Result<LedgerUpdates> {
@@ -549,7 +549,7 @@ impl<'a> InfoApi<'a> {
 
     pub async fn non_funding_ledger_updates(
         &self,
-        user: String,
+        user: &str,
         start_time: u64,
         end_time: Option<u64>,
     ) -> Result<LedgerUpdates> {
@@ -570,7 +570,7 @@ impl<'a> InfoApi<'a> {
 
     pub async fn historical_funding_rates(
         &self,
-        coin: String,
+        coin: &str,
         start_time: u64,
         end_time: Option<u64>,
     ) -> Result<FundingHistory> {
@@ -613,7 +613,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn active_asset_data(&self, user: String, coin: String) -> Result<ActiveAssetData> {
+    pub async fn active_asset_data(&self, user: String, coin: &str) -> Result<ActiveAssetData> {
         let payload = json!({
             "type": "activeAssetData",
             "user": json!(user),
@@ -634,7 +634,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn builder_deployed_perp_market_limits(&self, dex: String) -> Result<PerpDexLimits> {
+    pub async fn builder_deployed_perp_market_limits(&self, dex: &str) -> Result<PerpDexLimits> {
         let payload = json!({
             "type": "perpDexLimits",
             "dex": json!(dex)
@@ -651,7 +651,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn market_status(&self, dex: String) -> Result<PerpDexState> {
+    pub async fn perp_market_status(&self, dex: &str) -> Result<PerpDexStatus> {
         let payload = json!({
             "type": "perpDexStatus",
             "dex": json!(dex)
@@ -678,7 +678,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn token_balances(&self, user: String) -> Result<SpotClearinghouseState> {
+    pub async fn token_balances(&self, user: &str) -> Result<SpotClearinghouseState> {
         let payload = json!({
             "type": "spotClearinghouseState",
             "user": user
@@ -687,7 +687,7 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn spot_deploy_auction_information(&self, user: String) -> Result<SpotDeployState> {
+    pub async fn spot_deploy_auction_information(&self, user: &str) -> Result<SpotDeployState> {
         let payload = json!({
             "type": "spotDeployState",
             "user": user
@@ -706,9 +706,10 @@ impl<'a> InfoApi<'a> {
         self.post(payload).await
     }
 
-    pub async fn token_information(&self) -> Result<TokenDetails> {
+    pub async fn token_information(&self, token_id: &str) -> Result<TokenDetails> {
         let payload = json!({
-            "type": "tokenDetails"
+            "type": "tokenDetails",
+            "tokenId": token_id
         });
 
         self.post(payload).await

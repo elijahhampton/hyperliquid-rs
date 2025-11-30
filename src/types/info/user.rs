@@ -398,7 +398,7 @@ pub struct ClearinghouseState {
     #[serde(rename = "crossMaintenanceMarginUsed")]
     pub cross_maintenance_margin_used: Decimal,
     pub withdrawable: Decimal,
-    #[serde(rename = "assetPosition")]
+    #[serde(rename = "assetPositions")]
     pub asset_positions: Vec<AssetPosition>,
     pub time: u64,
 }

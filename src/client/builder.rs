@@ -33,7 +33,7 @@ impl HyperliquidClientBuilder {
     }
 
     pub fn endpoint(&mut self, endpoint: String) -> &HyperliquidClientBuilder {
-        self.base_url = Some("".to_string());
+        self.base_url = Some(endpoint);
         self
     }
 

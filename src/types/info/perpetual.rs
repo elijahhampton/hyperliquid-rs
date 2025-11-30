@@ -1,8 +1,7 @@
 /// Response types for the info endpoints that are specific to perpetuals.
 /// Additional information for endpoint responses can be found
 /// here: https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/perpetuals
-
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// Response type for POST /info with type "perpDexs"
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -33,6 +32,7 @@ pub struct AssetInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// "strictIsolated" | "noCross"
     pub margin_mode: Option<String>,
+    pub margin_table_id: usize,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -63,12 +63,12 @@ pub struct PerpetualsMetadata {
 pub struct AssetContext {
     pub day_ntl_vlm: String,
     pub funding: String,
-    pub impact_pxs: [String; 2],
+    pub impact_pxs: Option<[String; 2]>,
     pub mark_px: String,
-    pub mid_px: String,
+    pub mid_px: Option<String>,
     pub open_interest: String,
     pub oracle_px: String,
-    pub premium: String,
+    pub premium: Option<String>,
     pub prev_day_px: String,
 }
 
@@ -85,7 +85,6 @@ pub struct CumulativeFunding {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Leverage {
-    pub raw_usd: String,
     /// "isolated" | "cross"
     #[serde(rename = "type")]
     pub type_: String,

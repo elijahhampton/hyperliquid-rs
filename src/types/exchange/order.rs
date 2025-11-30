@@ -1,5 +1,4 @@
 /// Request and response types for the exchange endpoint used to interact with and trade on the Hyperliquid chain.
-
 use serde::{Deserialize, Serialize};
 
 /// Client Order ID - optional 128 bit hex string

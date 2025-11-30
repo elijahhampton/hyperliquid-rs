@@ -10,7 +10,11 @@ pub enum HyperliquidError {
     #[error("API error {status}: {body}")]
     Api { status: u16, body: String },
     #[error("Invalid request parameters for method '{method}' for parameter '{parameter}'.")]
-    InvalidRequestParameter { method: String, parameter: String, reason: String },
+    InvalidRequestParameter {
+        method: String,
+        parameter: String,
+        reason: String,
+    },
 }
 
 pub type Result<T> = std::result::Result<T, HyperliquidError>;

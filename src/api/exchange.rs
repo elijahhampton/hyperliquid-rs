@@ -7,13 +7,12 @@ use crate::{
         BatchModifyAction, CDepositAction, CWithdrawAction, CancelResponseData, DefaultResponse,
         ModifyAction, OrderAction, OrderResponse, ReserveRequestWeightAction, ScheduleCancelAction,
         SendAssetAction, TokenDelegateAction, TwapCancelAction, TwapCancelResponse,
-        TwapOrderAction, TwapOrderResponse, TwapOrderResponseData, UpdateIsolatedMarginAction,
+        TwapOrderAction, TwapOrderResponse, UpdateIsolatedMarginAction,
         UpdateLeverageAction, UsdClassTransferAction, UsdSendAction, UserDexAbstractionAction,
         ValidatorL1StreamAction, VaultTransferAction, WithdrawAction,
     },
 };
 use alloy::signers::Signature;
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 /// Exchange endpoint
@@ -266,7 +265,7 @@ impl<'a> ExchangeApi<'a> {
         nonce: u64,
         signature: Signature,
     ) -> Result<DefaultResponse> {
-        let mut payload = json!({
+        let payload = json!({
             "action": action,
             "nonce": nonce,
             "signature": signature
@@ -281,7 +280,7 @@ impl<'a> ExchangeApi<'a> {
         nonce: u64,
         signature: Signature,
     ) -> Result<DefaultResponse> {
-        let mut payload = json!({
+        let payload = json!({
             "action": action,
             "nonce": nonce,
             "signature": signature
@@ -296,7 +295,7 @@ impl<'a> ExchangeApi<'a> {
         nonce: u64,
         signature: Signature,
     ) -> Result<DefaultResponse> {
-        let mut payload = json!({
+        let payload = json!({
             "action": action,
             "nonce": nonce,
             "signature": signature
@@ -311,7 +310,7 @@ impl<'a> ExchangeApi<'a> {
         nonce: u64,
         signature: Signature,
     ) -> Result<DefaultResponse> {
-        let mut payload = json!({
+        let payload = json!({
             "action": action,
             "nonce": nonce,
             "signature": signature
@@ -326,7 +325,7 @@ impl<'a> ExchangeApi<'a> {
         nonce: u64,
         signature: Signature,
     ) -> Result<DefaultResponse> {
-        let mut payload = json!({
+        let payload = json!({
             "action": action,
             "nonce": nonce,
             "signature": signature
@@ -341,7 +340,7 @@ impl<'a> ExchangeApi<'a> {
         nonce: u64,
         signature: Signature,
     ) -> Result<DefaultResponse> {
-        let mut payload = json!({
+        let payload = json!({
             "action": action,
             "nonce": nonce,
             "signature": signature
@@ -356,7 +355,7 @@ impl<'a> ExchangeApi<'a> {
         nonce: u64,
         signature: Signature,
     ) -> Result<DefaultResponse> {
-        let mut payload = json!({
+        let payload = json!({
             "action": action,
             "nonce": nonce,
             "signature": signature
@@ -371,7 +370,7 @@ impl<'a> ExchangeApi<'a> {
         nonce: u64,
         signature: Signature,
     ) -> Result<DefaultResponse> {
-        let mut payload = json!({
+        let payload = json!({
             "action": action,
             "nonce": nonce,
             "signature": signature
@@ -386,7 +385,7 @@ impl<'a> ExchangeApi<'a> {
         nonce: u64,
         signature: Signature,
     ) -> Result<DefaultResponse> {
-        let mut payload = json!({
+        let payload = json!({
             "action": action,
             "nonce": nonce,
             "signature": signature
@@ -401,7 +400,7 @@ impl<'a> ExchangeApi<'a> {
         nonce: u64,
         signature: Signature,
     ) -> Result<DefaultResponse> {
-        let mut payload = json!({
+        let payload = json!({
             "action": action,
             "nonce": nonce,
             "signature": signature
@@ -505,7 +504,7 @@ impl<'a> ExchangeApi<'a> {
         nonce: u64,
         signature: Signature,
     ) -> Result<DefaultResponse> {
-        let mut payload = json!({
+        let payload = json!({
             "action": action,
             "nonce": nonce,
             "signature": signature
@@ -520,7 +519,7 @@ impl<'a> ExchangeApi<'a> {
         nonce: u64,
         signature: Signature,
     ) -> Result<DefaultResponse> {
-        let mut payload = json!({
+        let payload = json!({
             "action": action,
             "nonce": nonce,
             "signature": signature
@@ -535,7 +534,7 @@ impl<'a> ExchangeApi<'a> {
         nonce: u64,
         signature: Signature,
     ) -> Result<DefaultResponse> {
-        let mut payload = json!({
+        let payload = json!({
             "action": action,
             "nonce": nonce,
             "signature": signature

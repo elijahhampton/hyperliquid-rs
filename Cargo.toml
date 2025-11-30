@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 authors = ["Elijah Hampton:elijahhamptonj@proton.me"]
 
+
 [[example]]
 name = "account_status"
 path = "examples/account_status.rs"
@@ -28,6 +29,9 @@ path = "examples/vault_details.rs"
 name = "order_status_by_oid_or_cloid"
 path = "examples/order_status_by_oid_or_cloid.rs"
 
+[lints.clippy]
+dead_code = "deny"
+unused_imports = "deny"
 
 [dependencies]
 alloy = "1.1.2"

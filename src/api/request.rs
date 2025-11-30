@@ -1,8 +1,6 @@
 use crate::error::{HyperliquidError, Result};
 use once_cell::sync::Lazy;
-use reqwest::{Client, Error, Response};
-use serde::Serialize;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tracing;
 

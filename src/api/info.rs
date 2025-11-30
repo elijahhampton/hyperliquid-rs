@@ -2,26 +2,23 @@ use crate::{
     api::{SUPPORTED_INTERVALS, current_time_millis, request::post_json},
     client::HyperliquidClient,
     error::Result,
-    types::{
-        info::{
+    types::info::{
             AlignedQuoteTokenInfo, AllMids, BuilderFeeApproval, CandleSnapshot, ClearinghouseState,
-            FrontendOpenOrders, L2BookSnapshot, OpenOrders, OrderId, OrderStatus, OrderWithStatus,
+            FrontendOpenOrders, L2BookSnapshot, OpenOrders, OrderId, OrderWithStatus,
             TwapSliceFills, UserFees, UserFills, UserHistoricalOrders, UserPortfolio,
             UserRateLimits, UserReferralInformation, UserRole, UserStakingDelegations,
             UserStakingRewards, UserStakingSummary, UserSubAccounts, UserVaultDeposits,
             perpetual::{
-                ActiveAssetData, FundingHistory, FundingRate, LedgerUpdates, MetaAndAssetContexts,
+                ActiveAssetData, FundingHistory, LedgerUpdates, MetaAndAssetContexts,
                 PerpDeployAuctionStatus, PerpDexLimits, PerpDexStatus, PerpetualDexs,
                 PerpetualsMetadata, PerpsAtOpenInterestCap, VenueFundings,
             },
             spot::{
-                SpotAssetContext, SpotClearinghouseState, SpotDeployState,
+                SpotClearinghouseState, SpotDeployState,
                 SpotMetaAndAssetContexts, SpotMetadata, SpotPairDeployAuctionStatus, TokenDetails,
             },
             user::{CandleSnapshotRequest, UserStakingHistory},
         },
-        ws::PerpDexState,
-    },
 };
 /// The info endpoint is used to fetch information about the exchange and specific users.
 use serde_json::json;
@@ -256,8 +253,8 @@ impl<'a> InfoApi<'a> {
             }
         }
 
-        if n_sig_figs == Some(5) {
-            if let Some(m) = mantissa {
+        if n_sig_figs == Some(5)
+            && let Some(m) = mantissa {
                 if [1, 2, 5].contains(&m) {
                     payload["mantissa"] = json!(m);
                 }
@@ -268,7 +265,6 @@ impl<'a> InfoApi<'a> {
                     reason: format!("Invalid parameter {} for field {}", m, "mantissa"),
                 });
             }
-        }
 
         self.post(payload).await
     }
@@ -644,7 +640,7 @@ impl<'a> InfoApi<'a> {
             return Err(crate::error::HyperliquidError::InvalidRequestParameter {
                 method: "builder_deployed_perp_market_limits".to_string(),
                 parameter: "dex".to_string(),
-                reason: format!("The empty string is not allowed."),
+                reason: "The empty string is not allowed.".to_string(),
             });
         }
 

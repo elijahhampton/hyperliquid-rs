@@ -12,6 +12,12 @@ pub struct HyperliquidClientBuilder {
     network: Option<Network>,
 }
 
+impl Default for HyperliquidClientBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl HyperliquidClientBuilder {
     pub fn new() -> Self {
         Self {

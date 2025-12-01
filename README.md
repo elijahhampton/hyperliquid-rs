@@ -2,7 +2,19 @@
 
 A unofficial Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perpetuals decentralized exchange. Built with type safety in mind and async-first architecture.
 
-⚠️ **Not suitable for production trading. This SDK is still under development.**
+⚠️ ** This SDK is still under development. It is not yet suitable for production trading. Current stable for: **
+
+**Safe to use:**
+- Market data queries (spot & perpetuals)
+- Account information retrieval
+- Order book snapshots
+- Historical candle data
+- User fills and funding history
+
+**Experimental (testnet only):**
+- Order placement and cancellation
+- Position management
+- Vault operations
 
 ## Project Status
 
@@ -10,9 +22,7 @@ A unofficial Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-perfo
 - [x] EIP-712 authentication & message signing
 - [x] Exchange API (order placement, cancellation)
 - [ ] WebSocket streaming (real-time data feeds)
-- [ ] CLI application
-
-**Not suitable for production trading.** API surface and semantics subject to change before 1.0 release.
+- [ ] CLI
 
 ## Quick Start
 
@@ -78,8 +88,9 @@ rustc --version
 
 rustup update stable
 ```
+## Architecture
 
-### Async-First Architecture
+### Async-First
 
 Built on `tokio` for high-concurrency workloads:
 

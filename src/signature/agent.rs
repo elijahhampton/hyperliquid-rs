@@ -3,10 +3,10 @@ pub(crate) mod l1 {
         dyn_abi::Eip712Domain,
         primitives::{Address, B256},
         sol,
-        sol_types::{SolStruct, eip712_domain},
+        sol_types::{eip712_domain, SolStruct},
     };
 
-    use crate::eip712::Eip712;
+    use crate::signature::eip712::Eip712;
 
     sol! {
         #[derive(Debug)]

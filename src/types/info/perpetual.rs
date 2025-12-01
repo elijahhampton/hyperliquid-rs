@@ -1,6 +1,6 @@
 /// Response types for the info endpoints that are specific to perpetuals.
 /// Additional information for endpoint responses can be found
-/// here: https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/perpetuals
+/// here: `<https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/perpetuals>`
 use serde::{Deserialize, Serialize};
 
 /// Response type for POST /info with type "perpDexs"
@@ -180,10 +180,10 @@ pub struct PredictedFunding {
     pub next_funding_time: u64,
 }
 
-/// Array of [venue_name, predicted_funding] pairs
+/// Array of [`venue_name`, `predicted_funding`] pairs
 pub type VenueFundings = Vec<(String, PredictedFunding)>;
 
-/// Array of [coin, venue_fundings] pairs
+/// Array of [coin, `venue_fundings`] pairs
 pub type PredictedFundings = Vec<(String, VenueFundings)>;
 
 /// Response type for POST /info with type "perpsAtOpenInterestCap"

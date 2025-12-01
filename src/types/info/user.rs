@@ -1,9 +1,9 @@
 /// Response types for the info endpoints that are used to fetch information about the exchange and specific users.
 /// Additional information for all endpoints can be found
-/// here: https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint
+/// here: `<https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint>`
 ///
 use rust_decimal::{self, Decimal};
-use serde::de::Error;
+use serde::de::Error as _;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 
@@ -15,7 +15,7 @@ pub type AllMids = HashMap<String, Decimal>;
 pub struct OpenOrdersRequest {
     /// "allMids"
     #[serde(rename = "type")]
-    type_: String,
+    pub type_: String,
     /// Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
     pub user: String,
     /// The name of the perpetuals DEX to query. Defaults to the empty string which represents
@@ -28,7 +28,7 @@ pub struct OpenOrder {
     pub coin: String,
     #[serde(rename = "limitPx")]
     pub limit_px: Decimal,
-    oid: u64,
+    pub oid: u64,
     pub side: String,
     pub sz: Decimal,
     pub timestamp: u64,
@@ -41,7 +41,7 @@ pub type OpenOrders = Vec<OpenOrder>;
 #[derive(Debug, Serialize)]
 pub struct FrontendOpenOrdersRequest {
     #[serde(rename = "type")]
-    type_: String,
+    pub type_: String,
     /// Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
     pub user: String,
     /// The name of the perpetuals DEX to query. Defaults to the empty string which represents
@@ -74,7 +74,7 @@ pub struct FrontendOpenOrder {
     pub trigger_px: Decimal,
 }
 
-/// Response for "FrontendOpenOrders" request type.
+/// Response for `FrontendOpenOrders` request type.
 pub type FrontendOpenOrders = Vec<FrontendOpenOrder>;
 
 /// Request for "userFills" request type.
@@ -82,7 +82,7 @@ pub type FrontendOpenOrders = Vec<FrontendOpenOrder>;
 pub struct UserFillsRequest {
     /// "userFills"
     #[serde(rename = "type")]
-    type_: String,
+    pub type_: String,
     /// Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
     pub user: String,
     /// When true, partial fills are combined when a crossing order gets filled by multiple
@@ -96,7 +96,7 @@ pub struct UserFillsRequest {
 pub struct PerpetualFill {
     #[serde(rename = "closedPnl")]
     pub closed_pnl: Decimal,
-    /// Refer to https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/asset-ids for more information
+    /// Refer to `<https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/asset-ids>` for more information
     /// on how asset IDs work.
     pub coin: String,
     pub crossed: bool,
@@ -134,7 +134,7 @@ where
 
 #[derive(Debug, Deserialize)]
 pub struct SpotFill {
-    /// Refer to https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/asset-ids for more information
+    /// Refer to `<https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/asset-ids>` for more information
     /// on how asset IDs work.
     pub coin: String,
     pub px: Decimal,
@@ -169,15 +169,15 @@ pub type UserFills = Vec<Fill>;
 pub struct UserFillsByTimeRequest {
     /// "userFillsByTime"
     #[serde(rename = "type")]
-    type_: String,
+    pub type_: String,
     /// Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
     pub user: String,
     /// Start time in milliseconds, inclusive.
     #[serde(rename = "startTime")]
-    start_time: u32,
+    pub start_time: u32,
     /// End time in milliseconds, inclusive. Defaults to current time.
     #[serde(rename = "endTime")]
-    end_time: Option<u32>,
+    pub end_time: Option<u32>,
     /// When true, partial fills are combined when a crossing order gets filled by multiple
     /// different resting orders. Resting orders filled by multiple crossing orders are only
     /// aggregated if in the same block.
@@ -193,7 +193,7 @@ pub type UserFillsByTime = (PerpetualFill, SpotFill);
 pub struct UserRateLimitsRequest {
     /// "userRateLimit"
     #[serde(rename = "type")]
-    type_: String,
+    pub type_: String,
     /// Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
     pub user: String,
 }
@@ -203,12 +203,12 @@ pub struct UserRateLimitsRequest {
 pub struct UserRateLimits {
     #[serde(rename = "cumVlm")]
     pub cum_vlm: Decimal,
-    /// max(0, cumulative_used minus reserved)
+    /// max(0, `cumulative_used` minus reserved)
     #[serde(rename = "nRequestsUsed")]
     pub n_requests_used: u64,
     #[serde(rename = "nRequestsCap")]
     pub n_requests_cap: u64,
-    // max(0, reserved minus cumulative_used)
+    // max(0, reserved minus `cumulative_used`)
     #[serde(rename = "nRequestsSurplus")]
     pub n_requests_surplus: u64,
 }
@@ -235,7 +235,7 @@ pub struct OrderStatusRequest {
 #[serde(untagged)]
 pub enum OrderWithStatus {
     Success {
-        order: Order,
+        order: Box<Order>,
         status: String,
         #[serde(rename = "statusTimestamp")]
         status_timestamp: u64,
@@ -248,8 +248,8 @@ pub enum OrderWithStatus {
 /// Response for request with type "orderStatus"
 #[derive(Debug, Deserialize)]
 pub struct OrderStatus {
-    status: String,
-    order: OrderWithStatus,
+    pub status: String,
+    pub order: OrderWithStatus,
 }
 
 /// Represents a Bid or Ask in the [`L2BookSnapshot`].
@@ -278,6 +278,7 @@ pub struct CandleSnapshotRequest {
     pub end_time: u64,
 }
 
+#[allow(nonstandard_style)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Candle {
     T: u64,
@@ -305,7 +306,7 @@ pub struct CandleSnapshotRequestBody {
 #[derive(Debug, Serialize)]
 pub struct BuilderFeeApprovalRequest {
     /// "maxBuilderFee"
-    type_: String,
+    pub type_: String,
     /// Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
     pub user: String,
     /// Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
@@ -321,38 +322,38 @@ pub struct Children;
 
 #[derive(Debug, Deserialize)]
 pub struct Order {
-    coin: String,
-    side: String,
+    pub coin: String,
+    pub side: String,
     #[serde(rename = "limitPx")]
-    limit_px: Decimal,
-    sz: Decimal,
-    oid: usize,
-    timestamp: u64,
+    pub limit_px: Decimal,
+    pub sz: Decimal,
+    pub oid: usize,
+    pub timestamp: u64,
     #[serde(rename = "triggerCondition")]
-    trigger_condition: String,
+    pub trigger_condition: String,
     #[serde(rename = "isTrigger")]
-    is_trigger: bool,
+    pub is_trigger: bool,
     #[serde(rename = "triggerPx")]
-    trigger_px: Decimal,
-    children: Children,
+    pub trigger_px: Decimal,
+    pub children: Children,
     #[serde(rename = "isPositionTpsl")]
-    is_position_tpsl: bool,
+    pub is_position_tpsl: bool,
     #[serde(rename = "reduceOnly")]
-    reduce_only: bool,
+    pub reduce_only: bool,
     #[serde(rename = "orderType")]
-    order_type: String,
+    pub order_type: String,
     #[serde(rename = "origSz")]
-    orig_sz: Decimal,
-    tif: String,
-    cloid: Option<usize>,
+    pub orig_sz: Decimal,
+    pub tif: String,
+    pub cloid: Option<usize>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct HistoricalOrder {
-    order: Order,
-    status: String,
+    pub order: Order,
+    pub status: String,
     #[serde(rename = "statusTimestamp")]
-    status_timestamp: u64,
+    pub status_timestamp: u64,
 }
 
 /// Response for request with type "historicalOrders"
@@ -361,29 +362,29 @@ pub type UserHistoricalOrders = Vec<HistoricalOrder>;
 #[derive(Debug, Deserialize)]
 pub struct SliceFill {
     #[serde(rename = "closedPnl")]
-    closed_pnl: Decimal,
-    coin: String,
-    crossed: bool,
-    dir: String,
-    hash: String,
-    oid: u64,
-    px: Decimal,
-    side: String,
+    pub closed_pnl: Decimal,
+    pub coin: String,
+    pub crossed: bool,
+    pub dir: String,
+    pub hash: String,
+    pub oid: u64,
+    pub px: Decimal,
+    pub side: String,
     #[serde(rename = "startPosition")]
-    start_position: Decimal,
-    sz: Decimal,
-    time: u64,
-    fee: Decimal,
+    pub start_position: Decimal,
+    pub sz: Decimal,
+    pub time: u64,
+    pub fee: Decimal,
     #[serde(rename = "feeToken")]
-    fee_token: String,
-    tid: u64,
+    pub fee_token: String,
+    pub tid: u64,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Twap {
-    fill: SliceFill,
+    pub fill: SliceFill,
     #[serde(rename = "twapId")]
-    twap_id: usize,
+    pub twap_id: usize,
 }
 
 /// Response for request with type "userTwapSliceFills"
@@ -452,7 +453,7 @@ pub type UserSubAccounts = Option<Vec<SubAccount>>;
 #[derive(Debug, Serialize)]
 pub struct VaultDetailsRequest {
     #[serde(rename = "type")]
-    type_: String,
+    pub type_: String,
     /// Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
     #[serde(rename = "vaultAddress")]
     pub vault_address: String,
@@ -534,7 +535,7 @@ pub struct VaultDetails {
 #[derive(Debug, Serialize)]
 pub struct UserRequest {
     #[serde(rename = "type")]
-    type_: String,
+    pub type_: String,
     /// Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
     pub user: String,
 }
@@ -542,8 +543,8 @@ pub struct UserRequest {
 #[derive(Debug, Deserialize)]
 pub struct VaultDeposit {
     #[serde(rename = "vaultAddress")]
-    vault_address: String,
-    equity: Decimal,
+    pub vault_address: String,
+    pub equity: Decimal,
 }
 
 /// Response for equest with type "userVaultEquities"
@@ -553,7 +554,7 @@ pub type UserVaultDeposits = Vec<VaultDeposit>;
 /// Response for request with type "userRole"
 pub struct UserRole {
     /// "user" | "agent" | "vault" | "subaccount | "missing""
-    role: String,
+    pub role: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -610,7 +611,8 @@ pub struct ReferrerState {
 pub enum ReferrerData {
     Ready {
         code: String,
-        referralStates: Vec<ReferralState>,
+        #[serde(rename = "referralStates")]
+        referral_states: Vec<ReferralState>,
     },
     NeedToTrade {
         required: Decimal,
@@ -749,10 +751,10 @@ pub struct UserFees {
 
 #[derive(Debug, Deserialize)]
 pub struct StakingDelegation {
-    validator: String,
-    amount: Decimal,
+    pub validator: String,
+    pub amount: Decimal,
     #[serde(rename = "lockedUntilTimestamp")]
-    locked_until_timestamp: u64,
+    pub locked_until_timestamp: u64,
 }
 
 /// Response for the "delegations" request type.
@@ -771,15 +773,15 @@ pub struct UserStakingSummary {
 
 #[derive(Debug, Deserialize)]
 pub struct Delegate {
-    validator: String,
-    amount: Decimal,
+    pub validator: String,
+    pub amount: Decimal,
     #[serde(rename = "isUndelegate")]
-    is_undelegate: bool,
+    pub is_undelegate: bool,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Delta {
-    delegate: Delegate,
+    pub delegate: Delegate,
 }
 
 #[derive(Debug, Deserialize)]
@@ -808,7 +810,7 @@ pub type UserStakingRewards = Vec<StakingReward>;
 pub struct UserHIP3DexAbstractionStateRequest {
     /// "userDexAbstraction"
     #[serde(rename = "type")]
-    type_: String,
+    pub type_: String,
     /// Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
     pub user: String,
 }
@@ -821,9 +823,9 @@ pub type UserHIP3DexAbstractionState = bool;
 pub struct AlignedQuoteTokenInfoRequest {
     /// "alignedQuoteTokenInfo"
     #[serde(rename = "type")]
-    type_: String,
+    pub type_: String,
     /// Token index
-    token: usize,
+    pub token: usize,
 }
 
 pub type DailyAmountOwed = (String, Decimal);

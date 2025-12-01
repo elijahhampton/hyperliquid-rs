@@ -1,7 +1,7 @@
 use rust_decimal::Decimal;
 /// Response types for the info endpoints that are specific to spot.
 /// Additional information for endpoint responses can be found
-/// here: https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/spot
+/// here: `<https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/spot>`
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -97,7 +97,7 @@ pub struct DeployState {
     pub total_genesis_balance_wei: u64,
     /// Array of [address, balance] pairs
     pub user_genesis_balances: Vec<(String, Decimal)>,
-    /// Array of [token_id, balance] pairs
+    /// Array of [`token_id`, balance] pairs
     pub existing_token_genesis_balances: Vec<(i64, Decimal)>,
 }
 

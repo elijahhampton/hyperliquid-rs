@@ -1,8 +1,4 @@
-use crate::{
-    api::info::InfoApi,
-    client::HyperliquidClientBuilder,
-    error::Result,
-};
+use crate::{api::info::InfoApi, client::HyperliquidClientBuilder, error::Result};
 use reqwest::{Client, ClientBuilder};
 use std::sync::Arc;
 

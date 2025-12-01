@@ -4,7 +4,6 @@ use hyperliquid_rs::{
     helpers::{builder, user},
     init_tracing::init_tracing,
 };
-use tracing;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

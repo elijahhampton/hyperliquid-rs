@@ -5,7 +5,6 @@ use hyperliquid_rs::{
     init_tracing::init_tracing,
     types::info::{perpetual::PerpetualDex, user::CandleSnapshotRequest},
 };
-use tracing;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -23,14 +22,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
     tracing::info!("{:?}", l2_book_snapshot);
 
-    let start_time = current_time_millis();
-    let end_time = start_time + (30 * 60);
+    let candle_snapshot_start_time = current_time_millis();
+    let candle_snapshot_end_time = candle_snapshot_start_time.saturating_add(30 * 60);
 
     let candle_snapshot_req = CandleSnapshotRequest {
-        coin: "BTC".to_string(),
-        interval: "15m".to_string(),
-        start_time,
-        end_time,
+        coin: "BTC".to_owned(),
+        interval: "15m".to_owned(),
+        start_time: candle_snapshot_start_time,
+        end_time: candle_snapshot_end_time,
     };
 
     let candle_snapshot = hyperliquid
@@ -44,9 +43,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let perp_dexs = perpetual_dexs
         .iter()
-        .filter(|opt_dex| opt_dex.is_some())
-        .map(|dex| dex.clone().unwrap())
+        .filter_map(|dex| dex.clone())
         .collect::<Vec<PerpetualDex>>();
+
+    #[allow(clippy::indexing_slicing)]
     let perp_dex = perp_dexs[0].clone();
 
     let perpetual_metadata = hyperliquid

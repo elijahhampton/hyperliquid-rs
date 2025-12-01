@@ -1,4 +1,4 @@
-use crate::error::Result;
+use crate::error::{HyperliquidError, Result};
 use crate::{
     api::request::post_json,
     client::HyperliquidClient,
@@ -7,49 +7,50 @@ use crate::{
         BatchModifyAction, CDepositAction, CWithdrawAction, CancelResponseData, DefaultResponse,
         ModifyAction, OrderAction, OrderResponse, ReserveRequestWeightAction, ScheduleCancelAction,
         SendAssetAction, TokenDelegateAction, TwapCancelAction, TwapCancelResponse,
-        TwapOrderAction, TwapOrderResponse, UpdateIsolatedMarginAction,
-        UpdateLeverageAction, UsdClassTransferAction, UsdSendAction, UserDexAbstractionAction,
-        ValidatorL1StreamAction, VaultTransferAction, WithdrawAction,
+        TwapOrderAction, TwapOrderResponse, UpdateIsolatedMarginAction, UpdateLeverageAction,
+        UsdClassTransferAction, UsdSendAction, UserDexAbstractionAction, ValidatorL1StreamAction,
+        VaultTransferAction, WithdrawAction,
     },
 };
 use alloy::signers::Signature;
+use serde::de::DeserializeOwned;
 use serde_json::json;
 
 /// Exchange endpoint
 /// The exchange endpoint is used to interact with and trade on the Hyperliquid chain.
-
+///
 /// Asset
 /// Many of the requests take asset as an input. For perpetuals this is the index in
 /// the universe field returned by themeta response. For spot assets, use 10000 +
 /// index where index is the corresponding index in spotMeta.universe. For example,
 /// when submitting an order for PURR/USDC, the asset that should be used is 10000
 /// because its asset index in the spot metadata is 0.
-
+///
 /// Subaccounts and vaults
 /// Subaccounts and vaults do not have private keys. To perform actions on behalf of
 /// a subaccount or vault signing should be done by the master account and the vaultAddress
 /// field should be set to the address of the subaccount or vault. .
-
+///
 /// Expires After
 /// Some actions support an optional field expiresAfter which is a timestamp in milliseconds
 /// after which the action will be rejected. User-signed actions such as Core USDC transfer
 /// do not support the expiresAfter field. Note that actions consume 5x the usual address-based
 /// rate limit when canceled due to a stale expiresAfter field.
-
-pub struct ExchangeApi<'a> {
-    client: &'a HyperliquidClient,
+///
+pub struct ExchangeApi<'client> {
+    client: &'client HyperliquidClient,
 }
 
-impl<'a> ExchangeApi<'a> {
+impl<'client> ExchangeApi<'client> {
     /// Creates a [`ExchangeApi`].
-    pub fn new(client: &'a HyperliquidClient) -> Self {
+    pub fn new(client: &'client HyperliquidClient) -> Self {
         Self { client }
     }
 
     /// Executes a POST request and returns the result.
     async fn post<T>(&self, payload: serde_json::Value) -> Result<T>
     where
-        T: serde::de::DeserializeOwned,
+        T: DeserializeOwned,
     {
         post_json(
             self.client.http_client(),
@@ -74,11 +75,17 @@ impl<'a> ExchangeApi<'a> {
         });
 
         if let Some(vault_address) = vault_address {
-            payload["vaultAddress"] = json!(vault_address);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("vaultAddress".to_owned(), json!(vault_address));
         }
 
         if let Some(expires_after) = expires_after {
-            payload["expiresAfter"] = json!(expires_after);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("expiresAfter".to_owned(), json!(expires_after));
         }
 
         self.post(payload).await
@@ -99,11 +106,17 @@ impl<'a> ExchangeApi<'a> {
         });
 
         if let Some(vault_address) = vault_address {
-            payload["vaultAddress"] = json!(vault_address);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("vaultAddress".to_owned(), json!(vault_address));
         }
 
         if let Some(expires_after) = expires_after {
-            payload["expiresAfter"] = json!(expires_after);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("expiresAfter".to_owned(), json!(expires_after));
         }
 
         self.post(payload).await
@@ -124,11 +137,17 @@ impl<'a> ExchangeApi<'a> {
         });
 
         if let Some(vault_address) = vault_address {
-            payload["vaultAddress"] = json!(vault_address);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("vaultAddress".to_owned(), json!(vault_address));
         }
 
         if let Some(expires_after) = expires_after {
-            payload["expiresAfter"] = json!(expires_after);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("expiresAfter".to_owned(), json!(expires_after));
         }
 
         self.post(payload).await
@@ -149,11 +168,17 @@ impl<'a> ExchangeApi<'a> {
         });
 
         if let Some(vault_address) = vault_address {
-            payload["vaultAddress"] = json!(vault_address);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("vaultAddress".to_owned(), json!(vault_address));
         }
 
         if let Some(expires_after) = expires_after {
-            payload["expiresAfter"] = json!(expires_after);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("expiresAfter".to_owned(), json!(expires_after));
         }
 
         self.post(payload).await
@@ -174,11 +199,17 @@ impl<'a> ExchangeApi<'a> {
         });
 
         if let Some(vault_address) = vault_address {
-            payload["vaultAddress"] = json!(vault_address);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("vaultAddress".to_owned(), json!(vault_address));
         }
 
         if let Some(expires_after) = expires_after {
-            payload["expiresAfter"] = json!(expires_after);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("expiresAfter".to_owned(), json!(expires_after));
         }
 
         self.post(payload).await
@@ -199,11 +230,17 @@ impl<'a> ExchangeApi<'a> {
         });
 
         if let Some(vault_address) = vault_address {
-            payload["vaultAddress"] = json!(vault_address);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("vaultAddress".to_owned(), json!(vault_address));
         }
 
         if let Some(expires_after) = expires_after {
-            payload["expiresAfter"] = json!(expires_after);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("expiresAfter".to_owned(), json!(expires_after));
         }
 
         self.post(payload).await
@@ -224,11 +261,17 @@ impl<'a> ExchangeApi<'a> {
         });
 
         if let Some(vault_address) = vault_address {
-            payload["vaultAddress"] = json!(vault_address);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("vaultAddress".to_owned(), json!(vault_address));
         }
 
         if let Some(expires_after) = expires_after {
-            payload["expiresAfter"] = json!(expires_after);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("expiresAfter".to_owned(), json!(expires_after));
         }
 
         self.post(payload).await
@@ -249,11 +292,17 @@ impl<'a> ExchangeApi<'a> {
         });
 
         if let Some(vault_address) = vault_address {
-            payload["vaultAddress"] = json!(vault_address);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("vaultAddress".to_owned(), json!(vault_address));
         }
 
         if let Some(expires_after) = expires_after {
-            payload["expiresAfter"] = json!(expires_after);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("expiresAfter".to_owned(), json!(expires_after));
         }
 
         self.post(payload).await
@@ -424,11 +473,17 @@ impl<'a> ExchangeApi<'a> {
         });
 
         if let Some(vault_address) = vault_address {
-            payload["vaultAddress"] = json!(vault_address);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("vaultAddress".to_owned(), json!(vault_address));
         }
 
         if let Some(expires_after) = expires_after {
-            payload["expiresAfter"] = json!(expires_after);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("expiresAfter".to_owned(), json!(expires_after));
         }
 
         self.post(payload).await
@@ -449,11 +504,17 @@ impl<'a> ExchangeApi<'a> {
         });
 
         if let Some(vault_address) = vault_address {
-            payload["vaultAddress"] = json!(vault_address);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("vaultAddress".to_owned(), json!(vault_address));
         }
 
         if let Some(expires_after) = expires_after {
-            payload["expiresAfter"] = json!(expires_after);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("expiresAfter".to_owned(), json!(expires_after));
         }
 
         self.post(payload).await
@@ -473,7 +534,10 @@ impl<'a> ExchangeApi<'a> {
         });
 
         if let Some(expires_after) = expires_after {
-            payload["expiresAfter"] = json!(expires_after);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("expiresAfter".to_owned(), json!(expires_after));
         }
 
         self.post(payload).await
@@ -492,7 +556,10 @@ impl<'a> ExchangeApi<'a> {
         });
 
         if let Some(expires_after) = expires_after {
-            payload["expiresAfter"] = json!(expires_after);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("expiresAfter".to_owned(), json!(expires_after));
         }
 
         self.post(payload).await

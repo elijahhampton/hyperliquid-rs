@@ -1,5 +1,6 @@
 /// Request and response types for WebSocket subscriptions and streaming data.
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 /// WebSocket trade data
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -11,8 +12,8 @@ pub struct WsTrade {
     pub sz: String,
     pub hash: String,
     pub time: u64,
-    /// 50-bit hash of (buyer_oid, seller_oid)
-    /// For globally unique trade id, use (block_time, coin, tid)
+    /// 50-bit hash of (`buyer_oid`, `seller_oid`)
+    /// For globally unique trade id, use (`block_time`, coin, tid)
     pub tid: u64,
     /// [buyer, seller]
     pub users: [String; 2],
@@ -61,7 +62,7 @@ pub struct Notification {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AllMids {
-    pub mids: std::collections::HashMap<String, String>,
+    pub mids: HashMap<String, String>,
 }
 
 /// Candlestick data
@@ -389,7 +390,7 @@ pub struct PerpDexState {
     pub leading_vaults: Option<Vec<LeadingVault>>,
 }
 
-/// WebSocket web data (WebData3)
+/// WebSocket web data (`WebData3`)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WebData3 {

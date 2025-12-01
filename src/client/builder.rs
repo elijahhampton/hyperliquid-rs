@@ -1,4 +1,5 @@
 use crate::{client::HyperliquidClient, error::HyperliquidError};
+use alloy::signers::local::PrivateKeySigner;
 
 /// Represents the Hyperliquid Mainnet and Testnet chains.
 enum Network {
@@ -10,40 +11,60 @@ enum Network {
 pub struct HyperliquidClientBuilder {
     base_url: Option<String>,
     network: Option<Network>,
+    wallet: Option<PrivateKeySigner>,
 }
 
 impl Default for HyperliquidClientBuilder {
+    #[inline]
     fn default() -> Self {
         Self::new()
     }
 }
 
 impl HyperliquidClientBuilder {
-    pub fn new() -> Self {
+    #[inline]
+    pub const fn new() -> Self {
         Self {
             base_url: None,
             network: None,
+            wallet: None,
         }
     }
 
-    pub fn testnet(&mut self) -> &HyperliquidClientBuilder {
-        self.base_url = Some("https://api.hyperliquid-testnet.xyz".to_string());
+    #[inline]
+    pub fn testnet(&mut self) -> &Self {
+        self.base_url = Some("https://api.hyperliquid-testnet.xyz".to_owned());
         self.network = Some(Network::Testnet);
         self
     }
 
-    pub fn mainnet(&mut self) -> &HyperliquidClientBuilder {
-        self.base_url = Some("https://api.hyperliquid.xyz".to_string());
+    #[inline]
+    pub fn mainnet(&mut self) -> &Self {
+        self.base_url = Some("https://api.hyperliquid.xyz".to_owned());
         self.network = Some(Network::Mainnet);
         self
     }
 
-    pub fn endpoint(&mut self, endpoint: String) -> &HyperliquidClientBuilder {
+    #[inline]
+    pub fn with_custom_url(&mut self, endpoint: String) -> &Self {
         self.base_url = Some(endpoint);
         self
     }
 
+    #[inline]
+    pub fn with_wallet(&mut self, signer: PrivateKeySigner) -> &Self {
+        self.wallet = Some(signer);
+        self
+    }
+
+    #[inline]
     pub fn build(&self) -> Result<HyperliquidClient, HyperliquidError> {
-        HyperliquidClient::new(self.base_url.clone().expect(""))
+        let base_url = self
+            .base_url
+            .clone()
+            .ok_or(HyperliquidError::MissingConfiguration {
+                parameter: "base_url".to_owned(),
+            })?;
+        HyperliquidClient::new(base_url)
     }
 }

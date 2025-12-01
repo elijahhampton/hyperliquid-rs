@@ -1,5 +1,30 @@
-/// Request and response types for the exchange endpoint used to interact with and trade on the Hyperliquid chain.
-use serde::{Deserialize, Serialize};
+use crate::signature::eip712::Eip712;
+/// Request and response types for the exchange endpoint used to interact
+/// with and trade on the Hyperliquid chain.
+///
+use alloy::{
+    dyn_abi::Eip712Domain,
+    primitives::{keccak256, Address, B256},
+    sol_types::{eip712_domain, SolValue},
+};
+use serde::{Deserialize, Serialize, Serializer};
+
+fn eip_712_domain(chain_id: u64) -> Eip712Domain {
+    eip712_domain! {
+        name: "HyperliquidSignTransaction",
+        version: "1",
+        chain_id: chain_id,
+        verifying_contract: Address::ZERO,
+    }
+}
+
+#[allow(clippy::trivially_copy_pass_by_ref)] // Prevent a clone()
+fn serialize_hex<S>(val: &u64, s: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    s.serialize_str(&format!("0x{val:x}"))
+}
 
 /// Client Order ID - optional 128 bit hex string
 pub type Cloid = String;
@@ -208,11 +233,30 @@ pub struct UsdSendAction {
     pub type_: String,
     /// "Mainnet" | "Testnet"
     pub hyperliquid_chain: String,
-    /// e.g. "0xa4b1"
-    pub signature_chain_id: String,
+    /// `signature_chain_id` is a String type in the action
+    /// payload and is serialized from u64. e.g. "0xa4b1"
+    #[serde(serialize_with = "serialize_hex")]
+    pub signature_chain_id: u64,
     pub destination: String,
     pub amount: String,
     pub time: u64,
+}
+
+impl Eip712 for UsdSendAction {
+    fn domain(&self) -> Eip712Domain {
+        eip_712_domain(self.signature_chain_id)
+    }
+
+    fn struct_hash(&self) -> B256 {
+        let items = (
+            keccak256("HyperliquidTransaction:UsdSend(string hyperliquidChain,string destination,string amount,uint64 time)"),
+            keccak256(&self.hyperliquid_chain),
+            keccak256(&self.destination),
+            keccak256(&self.amount),
+            &self.time
+        );
+        keccak256(items.abi_encode())
+    }
 }
 
 /// Request type for POST /exchange with type "spotSend"
@@ -224,12 +268,31 @@ pub struct SpotSendAction {
     pub type_: String,
     /// "Mainnet" | "Testnet"
     pub hyperliquid_chain: String,
-    pub signature_chain_id: String,
+    #[serde(serialize_with = "serialize_hex")]
+    pub signature_chain_id: u64,
     pub destination: String,
     /// e.g. "PURR:0xc4bf3f870c0e9465323c0b6ed28096c2"
     pub token: String,
     pub amount: String,
     pub time: u64,
+}
+
+impl Eip712 for SpotSendAction {
+    fn domain(&self) -> Eip712Domain {
+        eip_712_domain(self.signature_chain_id)
+    }
+
+    fn struct_hash(&self) -> B256 {
+        let items = (
+            keccak256("HyperliquidTransaction:SpotSend(string hyperliquidChain,string destination,string token,string amount,uint64 time)"),
+            keccak256(&self.hyperliquid_chain),
+            keccak256(&self.destination),
+            keccak256(&self.token),
+            keccak256(&self.amount),
+            &self.time,
+        );
+        keccak256(items.abi_encode())
+    }
 }
 
 /// Request type for POST /exchange with type "withdraw3"
@@ -240,10 +303,28 @@ pub struct WithdrawAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    pub signature_chain_id: String,
+    #[serde(serialize_with = "serialize_hex")]
+    pub signature_chain_id: u64,
     pub amount: String,
     pub time: u64,
     pub destination: String,
+}
+
+impl Eip712 for WithdrawAction {
+    fn domain(&self) -> Eip712Domain {
+        eip_712_domain(self.signature_chain_id)
+    }
+
+    fn struct_hash(&self) -> B256 {
+        let items = (
+            keccak256("HyperliquidTransaction:Withdraw(string hyperliquidChain,string destination,string amount,uint64 time)"),
+            keccak256(&self.hyperliquid_chain),
+            keccak256(&self.destination),
+            keccak256(&self.amount),
+            &self.time,
+        );
+        keccak256(items.abi_encode())
+    }
 }
 
 /// Request type for POST /exchange with type "usdClassTransfer"
@@ -254,7 +335,8 @@ pub struct UsdClassTransferAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    pub signature_chain_id: String,
+    #[serde(serialize_with = "serialize_hex")]
+    pub signature_chain_id: u64,
     pub amount: String,
     pub to_perp: bool,
     pub nonce: u64,
@@ -268,7 +350,8 @@ pub struct SendAssetAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    pub signature_chain_id: String,
+    #[serde(serialize_with = "serialize_hex")]
+    pub signature_chain_id: u64,
     pub destination: String,
     pub source_dex: String,
     pub destination_dex: String,
@@ -276,6 +359,27 @@ pub struct SendAssetAction {
     pub amount: String,
     pub from_sub_account: String,
     pub nonce: u64,
+}
+
+impl Eip712 for SendAssetAction {
+    fn domain(&self) -> Eip712Domain {
+        eip_712_domain(self.signature_chain_id)
+    }
+
+    fn struct_hash(&self) -> B256 {
+        let items = (
+            keccak256("HyperliquidTransaction:SendAsset(string hyperliquidChain,string destination,string sourceDex,string destinationDex,string token,string amount,string fromSubAccount,uint64 nonce)"),
+            keccak256(&self.hyperliquid_chain),
+            keccak256(&self.destination),
+            keccak256(&self.source_dex),
+            keccak256(&self.destination_dex),
+            keccak256(&self.token),
+            keccak256(&self.amount),
+            keccak256(&self.from_sub_account),
+            &self.nonce,
+        );
+        keccak256(items.abi_encode())
+    }
 }
 
 /// Request type for POST /exchange with type "cDeposit"
@@ -299,7 +403,8 @@ pub struct CWithdrawAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    pub signature_chain_id: String,
+    #[serde(serialize_with = "serialize_hex")]
+    pub signature_chain_id: u64,
     pub wei: u64,
     pub nonce: u64,
 }
@@ -312,7 +417,8 @@ pub struct TokenDelegateAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    pub signature_chain_id: String,
+    #[serde(serialize_with = "serialize_hex")]
+    pub signature_chain_id: u64,
     pub validator: String,
     pub is_undelegate: bool,
     pub wei: u64,
@@ -339,11 +445,29 @@ pub struct ApproveAgentAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    pub signature_chain_id: String,
+    #[serde(serialize_with = "serialize_hex")]
+    pub signature_chain_id: u64,
     pub agent_address: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub agent_name: Option<String>,
     pub nonce: u64,
+}
+
+impl Eip712 for ApproveAgentAction {
+    fn domain(&self) -> Eip712Domain {
+        eip_712_domain(self.signature_chain_id)
+    }
+
+    fn struct_hash(&self) -> B256 {
+        let items = (
+            keccak256("HyperliquidTransaction:ApproveAgent(string hyperliquidChain,address agentAddress,string agentName,uint64 nonce)"),
+            keccak256(&self.hyperliquid_chain),
+            &self.agent_address,
+            keccak256(self.agent_name.as_deref().unwrap_or("")),
+            &self.nonce
+        );
+        keccak256(items.abi_encode())
+    }
 }
 
 /// Request type for POST /exchange with type "approveBuilderFee"
@@ -354,11 +478,29 @@ pub struct ApproveBuilderFeeAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    pub signature_chain_id: String,
+    #[serde(serialize_with = "serialize_hex")]
+    pub signature_chain_id: u64,
     /// e.g. "0.001%"
     pub max_fee_rate: String,
     pub builder: String,
     pub nonce: u64,
+}
+
+impl Eip712 for ApproveBuilderFeeAction {
+    fn domain(&self) -> Eip712Domain {
+        eip_712_domain(self.signature_chain_id)
+    }
+
+    fn struct_hash(&self) -> B256 {
+        let items = (
+            keccak256("HyperliquidTransaction:ApproveBuilderFee(string hyperliquidChain,string maxFeeRate,address builder,uint64 nonce)"),
+            keccak256(&self.hyperliquid_chain),
+            keccak256(&self.max_fee_rate),
+            &self.builder,
+            &self.nonce,
+        );
+        keccak256(items.abi_encode())
+    }
 }
 
 /// Request type for POST /exchange with type "twapOrder"
@@ -427,7 +569,8 @@ pub struct UserDexAbstractionAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    pub signature_chain_id: String,
+    #[serde(serialize_with = "serialize_hex")]
+    pub signature_chain_id: u64,
     pub user: String,
     pub enabled: bool,
     pub nonce: u64,

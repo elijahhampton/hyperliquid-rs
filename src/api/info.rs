@@ -1,60 +1,66 @@
+use crate::error::HyperliquidError::{self, InvalidRequestParameter};
 use crate::{
-    api::{SUPPORTED_INTERVALS, current_time_millis, request::post_json},
+    api::{
+        current_time_millis,
+        request::{err_request_invalid_hyperliquid_address, post_json},
+        SUPPORTED_INTERVALS,
+    },
+    chain::is_valid_hyperliquid_address,
     client::HyperliquidClient,
     error::Result,
     types::info::{
-            AlignedQuoteTokenInfo, AllMids, BuilderFeeApproval, CandleSnapshot, ClearinghouseState,
-            FrontendOpenOrders, L2BookSnapshot, OpenOrders, OrderId, OrderWithStatus,
-            TwapSliceFills, UserFees, UserFills, UserHistoricalOrders, UserPortfolio,
-            UserRateLimits, UserReferralInformation, UserRole, UserStakingDelegations,
-            UserStakingRewards, UserStakingSummary, UserSubAccounts, UserVaultDeposits,
-            perpetual::{
-                ActiveAssetData, FundingHistory, LedgerUpdates, MetaAndAssetContexts,
-                PerpDeployAuctionStatus, PerpDexLimits, PerpDexStatus, PerpetualDexs,
-                PerpetualsMetadata, PerpsAtOpenInterestCap, VenueFundings,
-            },
-            spot::{
-                SpotClearinghouseState, SpotDeployState,
-                SpotMetaAndAssetContexts, SpotMetadata, SpotPairDeployAuctionStatus, TokenDetails,
-            },
-            user::{CandleSnapshotRequest, UserStakingHistory},
+        perpetual::{
+            ActiveAssetData, FundingHistory, LedgerUpdates, MetaAndAssetContexts,
+            PerpDeployAuctionStatus, PerpDexLimits, PerpDexStatus, PerpetualDexs,
+            PerpetualsMetadata, PerpsAtOpenInterestCap, VenueFundings,
         },
+        spot::{
+            SpotClearinghouseState, SpotDeployState, SpotMetaAndAssetContexts, SpotMetadata,
+            SpotPairDeployAuctionStatus, TokenDetails,
+        },
+        user::{CandleSnapshotRequest, UserStakingHistory},
+        AlignedQuoteTokenInfo, AllMids, BuilderFeeApproval, CandleSnapshot, ClearinghouseState,
+        FrontendOpenOrders, L2BookSnapshot, OpenOrders, OrderId, OrderWithStatus, TwapSliceFills,
+        UserFees, UserFills, UserHistoricalOrders, UserPortfolio, UserRateLimits,
+        UserReferralInformation, UserRole, UserStakingDelegations, UserStakingRewards,
+        UserStakingSummary, UserSubAccounts, UserVaultDeposits,
+    },
 };
+use serde::de::DeserializeOwned;
 /// The info endpoint is used to fetch information about the exchange and specific users.
 use serde_json::json;
-use std::string::ToString;
 
 /// The Info API: [`InfoApi`] covers all endpoint types requested with the /info path.
 ///
 /// Pagination
 /// Responses that take a time range will only return 500 elements or distinct blocks of data. To query
 /// larger ranges, use the last returned timestamp as the next startTime for pagination.
-
+///
 /// Perpetuals vs Spot
 /// The endpoints in this section as well as websocket subscriptions work for both Perpetuals and Spot.
 /// For perpetuals coin is the name returned in the meta response. For Spot, coin should be PURR/USDC for PURR, and @{index} e.g. @1
 /// for all other spot tokens where index is the index of the spot pair in the universe field of the spotMeta response.
 /// For example, the spot index for HYPE on mainnet is @107 because the token index of HYPE is 150 and the spot pair @107 has tokens [150, 0].
-/// Note that some assets may be remapped on user interfaces. For example, BTC/USDC on app.hyperliquid.xyz corresponds to UBTC/USDC on mainnet HyperCore.
+/// Note that some assets may be remapped on user interfaces. For example, BTC/USDC on app.hyperliquid.xyz corresponds to UBTC/USDC on mainnet `HyperCore`.
 /// The L1 name on the token details page can be used to detect remappings.
-
+///
 /// User address
 /// To query the account data associated with a master or sub-account, you must pass in the actual address of that
 /// account. A common pitfall is to use an agent wallet's address which leads to an empty result.
-pub struct InfoApi<'a> {
-    client: &'a HyperliquidClient,
+pub struct InfoApi<'client> {
+    client: &'client HyperliquidClient,
 }
 
-impl<'a> InfoApi<'a> {
+impl<'client> InfoApi<'client> {
     /// Creates a [`InfoApi`].
-    pub fn new(client: &'a HyperliquidClient) -> Self {
+    pub fn new(client: &'client HyperliquidClient) -> Self {
         Self { client }
     }
 
     /// Executes a POST request and returns the result.
     async fn post<T>(&self, payload: serde_json::Value) -> Result<T>
     where
-        T: serde::de::DeserializeOwned,
+        T: DeserializeOwned,
     {
         post_json(
             self.client.http_client(),
@@ -67,7 +73,7 @@ impl<'a> InfoApi<'a> {
     /// Retrieves mids for all coins.
     /// If the book is empty, the last trade price will be used as a fallback.
     pub async fn all_mids(&self, dex: Option<String>) -> Result<AllMids> {
-        let dex_param = dex.unwrap_or("".to_string());
+        let dex_param = dex.unwrap_or_default();
         let payload = json!({
             "type": "allMids",
             "dex": json!(dex_param)
@@ -81,7 +87,7 @@ impl<'a> InfoApi<'a> {
     /// # Arguments
     /// * `user`    - Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
     /// * `dex`     - Perp dex name. Defaults to the empty string which represents the first perp dex. Spot open orders
-    /// are only included with the first perp dex.
+    ///   are only included with the first perp dex.
     ///
     /// # Returns
     /// A [`OpenOrders`] containing the list of open orders for a user.
@@ -100,7 +106,7 @@ impl<'a> InfoApi<'a> {
     /// # Arguments
     /// * `user`    - Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
     /// * `dex`     - Perp dex name. Defaults to the empty string which represents the first perp dex. Spot open orders
-    /// are only included with the first perp dex.
+    ///   are only included with the first perp dex.
     ///
     /// # Returns
     /// A [`FrontendOpenOrders`] containing the list of open orders with additional information for a user.
@@ -115,7 +121,10 @@ impl<'a> InfoApi<'a> {
         });
 
         if let Some(dex) = dex.filter(|s| !s.is_empty()) {
-            payload["dex"] = json!(dex);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("dex".to_owned(), json!(dex));
         }
 
         self.post(payload).await
@@ -126,7 +135,7 @@ impl<'a> InfoApi<'a> {
     /// # Arguments
     /// * `user`    - Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
     /// * `aggregateByTime`     - When true, partial fills are combined when a crossing order gets filled by multiple
-    /// different resting orders. Resting orders filled by multiple crossing orders are only aggregated if in the same block.
+    ///   different resting orders. Resting orders filled by multiple crossing orders are only aggregated if in the same block.
     ///
     /// # Returns
     /// [`UserFills`] containing the list of fills for a user.
@@ -137,7 +146,10 @@ impl<'a> InfoApi<'a> {
         });
 
         if let Some(agg) = aggregate_by_time {
-            payload["aggregateByTime"] = json!(agg);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("aggregateByTime".to_owned(), json!(agg));
         }
 
         self.post(payload).await
@@ -148,11 +160,11 @@ impl<'a> InfoApi<'a> {
     /// # Arguments
     /// * `user` - Address in 42-character hexadecimal format; e.g. 0x0000000000000000000000000000000000000000.
     /// * `aggregateByTime` - When true, partial fills are combined when a crossing order gets filled by multiple
-    /// different resting orders. Resting orders filled by multiple crossing orders are only aggregated if in the same block.
+    ///     different resting orders. Resting orders filled by multiple crossing orders are only aggregated if in the same block.
     /// * `startTime` - Start time in milliseconds, inclusive
     /// * `endTime` - End time in milliseconds, inclusive. Defaults to current time.
     /// * `aggregateByTime` - When true, partial fills are combined when a crossing order gets filled by multiple
-    /// different resting orders. Resting orders filled by multiple crossing orders are only aggregated if in the same block.
+    ///   different resting orders. Resting orders filled by multiple crossing orders are only aggregated if in the same block.
     ///
     /// # Returns
     /// [`UserFills`] containing the list of fills for a user.
@@ -170,11 +182,17 @@ impl<'a> InfoApi<'a> {
         });
 
         if let Some(end_time) = end_time {
-            payload["endTime"] = json!(end_time);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("endTime".to_owned(), json!(end_time));
         }
 
         if let Some(agg) = aggregate_by_time {
-            payload["aggregateByTime"] = json!(agg);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("aggregateByTime".to_owned(), json!(agg));
         }
 
         self.post(payload).await
@@ -204,7 +222,7 @@ impl<'a> InfoApi<'a> {
     ///
     /// # Returns
     /// An order with the current status. Possible values for the order status string
-    /// can be found here: https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint
+    /// can be found here: `<https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint>`
     pub async fn order_status(&self, user: &str, oid: OrderId) -> Result<OrderWithStatus> {
         let mut payload = json!({
             "type": "orderStatus",
@@ -212,9 +230,23 @@ impl<'a> InfoApi<'a> {
         });
 
         match oid {
-            OrderId::Numeric(id) => payload["oid"] = json!(id),
-            OrderId::ClientId(client_id) => payload["oid"] = json!(client_id),
-        };
+            OrderId::Numeric(id) => {
+                payload
+                    .as_object_mut()
+                    .ok_or_else(|| {
+                        HyperliquidError::Internal("payload wrongly formatted".to_owned())
+                    })?
+                    .insert("oid".to_owned(), json!(id));
+            }
+            OrderId::ClientId(client_id) => {
+                payload
+                    .as_object_mut()
+                    .ok_or_else(|| {
+                        HyperliquidError::Internal("payload wrongly formatted".to_owned())
+                    })?
+                    .insert("oid".to_owned(), json!(client_id));
+            }
+        }
 
         self.post(payload).await
     }
@@ -224,9 +256,9 @@ impl<'a> InfoApi<'a> {
     /// # Arguments
     /// * `coin` - The desired coin to view the snapshot.
     /// * `nSigFigs` - Optional field to aggregate levels to nSigFigs significant figures. Valid values
-    /// are 2, 3, 4, 5, and null, which means full precision.
+    ///   are 2, 3, 4, 5, and null, which means full precision.
     /// * `mantissa` - Optional field to aggregate levels. This field is only allowed if nSigFigs is 5.
-    /// Accepts values of 1, 2 or 5.
+    ///   Accepts values of 1, 2 or 5.
     ///
     /// # Returns
     /// Returns an L2 snapshot of the orderbook for the specified coin as [`L2BookSnapshot`].
@@ -242,29 +274,42 @@ impl<'a> InfoApi<'a> {
         });
 
         match n_sig_figs {
-            Some(2) | Some(3) | Some(4) | Some(5) => {
-                payload["nSigFigs"] = json!(n_sig_figs);
+            Some(2..=5) => {
+                payload
+                    .as_object_mut()
+                    .ok_or_else(|| {
+                        HyperliquidError::Internal("payload wrongly formatted".to_owned())
+                    })?
+                    .insert("nSigFigs".to_owned(), json!(n_sig_figs));
             }
-            Some(_) => {
-                payload["nSigFigs"] = json!(null);
-            }
-            None => {
-                payload["nSigFigs"] = json!(null);
+            _ => {
+                payload
+                    .as_object_mut()
+                    .ok_or_else(|| {
+                        HyperliquidError::Internal("payload wrongly formatted".to_owned())
+                    })?
+                    .insert("nSigFigs".to_owned(), json!(null));
             }
         }
 
-        if n_sig_figs == Some(5)
-            && let Some(m) = mantissa {
+        if n_sig_figs == Some(5) {
+            if let Some(m) = mantissa {
                 if [1, 2, 5].contains(&m) {
-                    payload["mantissa"] = json!(m);
+                    payload
+                        .as_object_mut()
+                        .ok_or_else(|| {
+                            HyperliquidError::Internal("payload wrongly formatted".to_owned())
+                        })?
+                        .insert("mantissa".to_owned(), json!(m));
                 }
 
-                return Err(crate::error::HyperliquidError::InvalidRequestParameter {
-                    method: "l2_book_snapshot".to_string(),
-                    parameter: "mantissa".to_string(),
+                return Err(InvalidRequestParameter {
+                    method: "l2_book_snapshot".to_owned(),
+                    parameter: "mantissa".to_owned(),
                     reason: format!("Invalid parameter {} for field {}", m, "mantissa"),
                 });
             }
+        }
 
         self.post(payload).await
     }
@@ -284,9 +329,9 @@ impl<'a> InfoApi<'a> {
         });
 
         if !SUPPORTED_INTERVALS.contains(req.interval.as_str()) {
-            return Err(crate::error::HyperliquidError::InvalidRequestParameter {
-                method: "candle_snapshot".to_string(),
-                parameter: "interval".to_string(),
+            return Err(InvalidRequestParameter {
+                method: "candle_snapshot".to_owned(),
+                parameter: "interval".to_owned(),
                 reason: format!("Expected one of: {:?}", SUPPORTED_INTERVALS),
             });
         }
@@ -313,25 +358,19 @@ impl<'a> InfoApi<'a> {
             "builder": builder
         });
 
-        if user.len() != 42 {
-            return Err(crate::error::HyperliquidError::InvalidRequestParameter {
-                method: "check_builder_fee_approval".to_string(),
-                parameter: "user".to_string(),
-                reason: format!(
-                    "Specified user parameter has incorrect length: {}",
-                    user.len()
-                ),
-            });
+        if !is_valid_hyperliquid_address(user) {
+            return Err(err_request_invalid_hyperliquid_address(
+                "check_builder_fee_approval".to_owned(),
+                "user".to_owned(),
+                "Specified user parameter has invalid address".to_owned(),
+            ));
         }
 
-        if builder.len() != 42 {
-            return Err(crate::error::HyperliquidError::InvalidRequestParameter {
-                method: "check_builder_fee_approval".to_string(),
-                parameter: "builder".to_string(),
-                reason: format!(
-                    "Specified builder parameter has incorrect length: {}",
-                    builder.len()
-                ),
+        if !is_valid_hyperliquid_address(builder) {
+            return Err(InvalidRequestParameter {
+                method: "check_builder_fee_approval".to_owned(),
+                parameter: "builder".to_owned(),
+                reason: "Specified builder parameter is invalid address".to_owned(),
             });
         }
 
@@ -339,6 +378,14 @@ impl<'a> InfoApi<'a> {
     }
 
     pub async fn historical_orders(&self, user: &str) -> Result<UserHistoricalOrders> {
+        if !is_valid_hyperliquid_address(user) {
+            return Err(err_request_invalid_hyperliquid_address(
+                "historical_orders".to_owned(),
+                "user".to_owned(),
+                "Specified user parameter has invalid address".to_owned(),
+            ));
+        }
+
         let payload = json!({
             "type": "historicalOrders",
             "user": user
@@ -348,6 +395,14 @@ impl<'a> InfoApi<'a> {
     }
 
     pub async fn twap_slice_fills(&self, user: &str) -> Result<TwapSliceFills> {
+        if !is_valid_hyperliquid_address(user) {
+            return Err(err_request_invalid_hyperliquid_address(
+                "twap_slice_fills".to_owned(),
+                "user".to_owned(),
+                "Specified user parameter has invalid address".to_owned(),
+            ));
+        }
+
         let payload = json!({
             "type": "userTwapSliceFills",
             "user": user
@@ -357,6 +412,14 @@ impl<'a> InfoApi<'a> {
     }
 
     pub async fn subaccounts(&self, user: &str) -> Result<UserSubAccounts> {
+        if !is_valid_hyperliquid_address(user) {
+            return Err(err_request_invalid_hyperliquid_address(
+                "subaccounts".to_owned(),
+                "user".to_owned(),
+                "Specified user parameter has invalid address".to_owned(),
+            ));
+        }
+
         let payload = json!({
             "type": "subAccounts",
             "user": user
@@ -368,7 +431,7 @@ impl<'a> InfoApi<'a> {
     pub async fn vault_details(
         &self,
         vault_address: &str,
-        user: Option<String>,
+        user: Option<&str>,
     ) -> Result<UserSubAccounts> {
         let mut payload = json!({
             "type": "vaultDetails",
@@ -376,13 +439,32 @@ impl<'a> InfoApi<'a> {
         });
 
         if let Some(user) = user {
-            payload["user"] = json!(user);
+            if !is_valid_hyperliquid_address(user) {
+                return Err(err_request_invalid_hyperliquid_address(
+                    "vault_details".to_owned(),
+                    "user".to_owned(),
+                    "Specified user parameter has invalid address".to_owned(),
+                ));
+            }
+
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("user".to_owned(), json!(user));
         }
 
         self.post(payload).await
     }
 
     pub async fn vault_deposits(&self, user: &str) -> Result<UserVaultDeposits> {
+        if !is_valid_hyperliquid_address(user) {
+            return Err(err_request_invalid_hyperliquid_address(
+                "vault_deposits".to_owned(),
+                "user".to_owned(),
+                "Specified user parameter has invalid address".to_owned(),
+            ));
+        }
+
         let payload = json!({
             "type": "userVaultEquities",
             "user": user
@@ -392,6 +474,14 @@ impl<'a> InfoApi<'a> {
     }
 
     pub async fn role(&self, user: &str) -> Result<UserRole> {
+        if !is_valid_hyperliquid_address(user) {
+            return Err(err_request_invalid_hyperliquid_address(
+                "role".to_owned(),
+                "user".to_owned(),
+                "Specified user parameter has invalid address".to_owned(),
+            ));
+        }
+
         let payload = json!({
             "type": "userRole",
             "user": user
@@ -401,6 +491,14 @@ impl<'a> InfoApi<'a> {
     }
 
     pub async fn portfolio(&self, user: &str) -> Result<UserPortfolio> {
+        if !is_valid_hyperliquid_address(user) {
+            return Err(err_request_invalid_hyperliquid_address(
+                "portfolio".to_owned(),
+                "user".to_owned(),
+                "Specified user parameter has invalid address".to_owned(),
+            ));
+        }
+
         let payload = json!({
             "type": "portfolio",
             "user": user
@@ -535,9 +633,15 @@ impl<'a> InfoApi<'a> {
         });
 
         if let Some(end_time) = end_time {
-            payload["endTime"] = json!(end_time);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("endTime".to_owned(), json!(end_time));
         } else {
-            payload["endTime"] = json!(current_time_millis());
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("endTime".to_owned(), json!(current_time_millis()));
         }
 
         self.post(payload).await
@@ -556,9 +660,15 @@ impl<'a> InfoApi<'a> {
         });
 
         if let Some(end_time) = end_time {
-            payload["endTime"] = json!(end_time);
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("endTime".to_owned(), json!(end_time));
         } else {
-            payload["endTime"] = json!(current_time_millis());
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("endTime".to_owned(), json!(current_time_millis()));
         }
 
         self.post(payload).await
@@ -568,7 +678,7 @@ impl<'a> InfoApi<'a> {
         &self,
         coin: &str,
         start_time: u64,
-        end_time: Option<u64>,
+        opt_end_time: Option<u64>,
     ) -> Result<FundingHistory> {
         let mut payload = json!({
             "type": "fundingHistory",
@@ -576,10 +686,16 @@ impl<'a> InfoApi<'a> {
             "startTime": start_time,
         });
 
-        if let Some(end_time) = end_time {
-            payload["endTime"] = json!(end_time);
+        if let Some(end_time) = opt_end_time {
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("endTime".to_owned(), json!(end_time));
         } else {
-            payload["endTime"] = json!(current_time_millis());
+            payload
+                .as_object_mut()
+                .ok_or_else(|| HyperliquidError::Internal("payload wrongly formatted".to_owned()))?
+                .insert("endTime".to_owned(), json!(current_time_millis()));
         }
 
         self.post(payload).await
@@ -617,9 +733,9 @@ impl<'a> InfoApi<'a> {
         });
 
         if user.len() != 42 {
-            return Err(crate::error::HyperliquidError::InvalidRequestParameter {
-                method: "active_asset_data".to_string(),
-                parameter: "user".to_string(),
+            return Err(InvalidRequestParameter {
+                method: "active_asset_data".to_owned(),
+                parameter: "user".to_owned(),
                 reason: format!(
                     "Specified user parameter has incorrect length: {}",
                     user.len()
@@ -637,10 +753,10 @@ impl<'a> InfoApi<'a> {
         });
 
         if dex.is_empty() {
-            return Err(crate::error::HyperliquidError::InvalidRequestParameter {
-                method: "builder_deployed_perp_market_limits".to_string(),
-                parameter: "dex".to_string(),
-                reason: "The empty string is not allowed.".to_string(),
+            return Err(InvalidRequestParameter {
+                method: "builder_deployed_perp_market_limits".to_owned(),
+                parameter: "dex".to_owned(),
+                reason: "The empty string is not allowed.".to_owned(),
             });
         }
 

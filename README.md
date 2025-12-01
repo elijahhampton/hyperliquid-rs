@@ -76,7 +76,6 @@ Rust **1.75.0** or higher is required. This project uses Rust 2021 edition featu
 # Verify your Rust version
 rustc --version
 
-# Update if needed
 rustup update stable
 ```
 

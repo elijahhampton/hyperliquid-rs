@@ -1,3 +1,4 @@
+use std::result::Result as StdResult;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -14,6 +15,18 @@ pub enum HyperliquidError {
         parameter: String,
         reason: String,
     },
+    #[error("Missing configuration for parameter {parameter}")]
+    MissingConfiguration { parameter: String },
+    #[error("{0}")]
+    JsonSerialization(#[from] serde_json::Error),
+    #[error["{0}"]]
+    Internal(String),
+    #[error["{0}"]]
+    SignatureFailure(String),
+    #[error["{0}"]]
+    Wallet(String),
+    #[error["{0}"]]
+    GenericParse(String),
 }
 
-pub type Result<T> = std::result::Result<T, HyperliquidError>;
+pub type Result<T> = StdResult<T, HyperliquidError>;

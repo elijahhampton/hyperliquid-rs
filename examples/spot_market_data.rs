@@ -1,11 +1,4 @@
-use hyperliquid_rs::{
-    api::current_time_millis,
-    client::HyperliquidClientBuilder,
-    helpers::user,
-    init_tracing::init_tracing,
-    types::info::{perpetual::PerpetualDex, user::CandleSnapshotRequest},
-};
-use tracing;
+use hyperliquid_rs::{client::HyperliquidClientBuilder, helpers::user, init_tracing::init_tracing};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

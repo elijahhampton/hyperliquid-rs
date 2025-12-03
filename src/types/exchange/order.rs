@@ -7,7 +7,9 @@ use alloy::{
     primitives::{keccak256, Address, B256},
     sol_types::{eip712_domain, SolValue},
 };
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
+
+use crate::types::serialize::{serialize_decimal, serialize_hex};
 
 fn eip_712_domain(chain_id: u64) -> Eip712Domain {
     eip712_domain! {
@@ -16,14 +18,6 @@ fn eip_712_domain(chain_id: u64) -> Eip712Domain {
         chain_id: chain_id,
         verifying_contract: Address::ZERO,
     }
-}
-
-#[allow(clippy::trivially_copy_pass_by_ref)] // Prevent a clone()
-fn serialize_hex<S>(val: &u64, s: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
-    s.serialize_str(&format!("0x{val:x}"))
 }
 
 /// Client Order ID - optional 128 bit hex string
@@ -87,8 +81,10 @@ pub struct OrderRequest {
     /// Is buy
     pub b: bool,
     /// Price
+    #[serde(serialize_with = "serialize_decimal")]
     pub p: String,
     /// Size
+    #[serde(serialize_with = "serialize_decimal")]
     pub s: String,
     /// Reduce only
     pub r: bool,
@@ -113,7 +109,6 @@ pub enum Grouping {
 
 /// Request type for POST /exchange with type "order"
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct OrderAction {
     #[serde(rename = "type")]
     /// "order"

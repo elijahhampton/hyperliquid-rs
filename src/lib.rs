@@ -6,11 +6,11 @@ pub mod error;
 ///
 /// Note: This module is primarily intended for examples and
 /// may change between versions.
-pub mod helpers;
+pub mod example_helpers;
 pub mod types;
 
 /// Tracing initialization utilities.
 pub mod init_tracing;
-pub(crate) mod signature;
+pub mod signature;
 
 mod chain;

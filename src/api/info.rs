@@ -2,7 +2,7 @@ use crate::error::HyperliquidError::{self, InvalidRequestParameter};
 use crate::{
     api::{
         current_time_millis,
-        request::{err_request_invalid_hyperliquid_address, post_json},
+        request_util::{err_request_invalid_hyperliquid_address, post_json},
         SUPPORTED_INTERVALS,
     },
     chain::is_valid_hyperliquid_address,
@@ -27,9 +27,10 @@ use crate::{
     },
 };
 use serde::de::DeserializeOwned;
-/// The info endpoint is used to fetch information about the exchange and specific users.
 use serde_json::json;
 
+/// The info endpoint is used to fetch information about the exchange and specific users.
+///
 /// The Info API: [`InfoApi`] covers all endpoint types requested with the /info path.
 ///
 /// Pagination

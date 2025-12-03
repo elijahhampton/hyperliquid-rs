@@ -32,27 +32,27 @@ impl HyperliquidClientBuilder {
     }
 
     #[inline]
-    pub fn testnet(&mut self) -> &Self {
+    pub fn testnet(&mut self) -> &mut Self {
         self.base_url = Some("https://api.hyperliquid-testnet.xyz".to_owned());
         self.network = Some(Network::Testnet);
         self
     }
 
     #[inline]
-    pub fn mainnet(&mut self) -> &Self {
+    pub fn mainnet(&mut self) -> &mut Self {
         self.base_url = Some("https://api.hyperliquid.xyz".to_owned());
         self.network = Some(Network::Mainnet);
         self
     }
 
     #[inline]
-    pub fn with_custom_url(&mut self, endpoint: String) -> &Self {
+    pub fn with_custom_url(&mut self, endpoint: String) -> &mut Self {
         self.base_url = Some(endpoint);
         self
     }
 
     #[inline]
-    pub fn with_wallet(&mut self, signer: PrivateKeySigner) -> &Self {
+    pub fn with_wallet(&mut self, signer: PrivateKeySigner) -> &mut Self {
         self.wallet = Some(signer);
         self
     }

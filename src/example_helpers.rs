@@ -1,5 +1,8 @@
+use alloy::signers::local::PrivateKeySigner;
+
 use crate::client::HyperliquidClient;
 use crate::error::Result;
+use std::env;
 
 pub fn testnet_client() -> Result<HyperliquidClient> {
     HyperliquidClient::builder().testnet().build()
@@ -22,4 +25,12 @@ pub fn builder() -> String {
 #[allow(clippy::must_use_candidate)]
 pub fn vault_address() -> String {
     String::new()
+}
+
+pub fn load_signer() -> PrivateKeySigner {
+    #[allow(clippy::expect_used)]
+    let pkey = env::var("HL_PRIVATE_KEY").expect("HL_PRIVATE_KEY env var is missing");
+
+    #[allow(clippy::expect_used)]
+    pkey.parse().expect("Invalid private key format")
 }

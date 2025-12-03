@@ -1,6 +1,7 @@
 use crate::error::{HyperliquidError, Result};
+use crate::types::signature::Eip712Signature;
 use crate::{
-    api::request::post_json,
+    api::request_util::post_json,
     client::HyperliquidClient,
     types::exchange::{
         AgentEnableDexAbstractionAction, ApproveAgentAction, ApproveBuilderFeeAction,
@@ -54,17 +55,24 @@ impl<'client> ExchangeApi<'client> {
     {
         post_json(
             self.client.http_client(),
-            &format!("{}/info", self.client.base_url()),
+            &format!("{}/exchange", self.client.base_url()),
             payload,
         )
         .await
     }
 
+    /// Places an order on Hyperliquid.
+    ///
+    /// For limit orders, TIF (time-in-force) sets the behavior of the order upon first hitting the book.
+    /// ALO (add liquidity only, i.e. "post only") will be canceled instead of immediately matching.
+    /// IOC (immediate or cancel) will have the unfilled part canceled instead of resting.
+    /// GTC (good til canceled) orders have no special behavior.
+    /// Client Order ID (cloid) is an optional 128 bit hex string, e.g. 0x1234567890abcdef1234567890abcdef
     pub async fn place_order(
         &self,
         action: OrderAction,
         nonce: u64,
-        signature: Signature,
+        signature: Eip712Signature,
         vault_address: Option<String>,
         expires_after: Option<u64>,
     ) -> Result<OrderResponse> {

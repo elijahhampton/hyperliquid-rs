@@ -1,4 +1,8 @@
-use crate::{api::info::InfoApi, client::HyperliquidClientBuilder, error::Result};
+use crate::{
+    api::{exchange::ExchangeApi, info::InfoApi},
+    client::HyperliquidClientBuilder,
+    error::Result,
+};
 use reqwest::{Client, ClientBuilder};
 use std::sync::Arc;
 
@@ -44,5 +48,9 @@ impl HyperliquidClient {
 
     pub fn info(&self) -> InfoApi<'_> {
         InfoApi::new(self)
+    }
+
+    pub fn exchange(&self) -> ExchangeApi<'_> {
+        ExchangeApi::new(self)
     }
 }

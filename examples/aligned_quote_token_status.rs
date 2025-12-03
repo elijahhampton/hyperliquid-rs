@@ -1,5 +1,5 @@
 use hyperliquid_rs::{
-    helpers::{testnet_client, user},
+    example_helpers::{testnet_client, user},
     init_tracing::init_tracing,
 };
 

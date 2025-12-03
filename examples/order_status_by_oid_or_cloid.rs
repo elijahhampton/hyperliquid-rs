@@ -1,5 +1,5 @@
 use hyperliquid_rs::{
-    client::HyperliquidClientBuilder, helpers::user, init_tracing::init_tracing,
+    client::HyperliquidClientBuilder, example_helpers::user, init_tracing::init_tracing,
     types::info::user::OrderId,
 };
 

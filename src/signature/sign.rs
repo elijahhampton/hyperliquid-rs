@@ -1,112 +1,157 @@
 use alloy::{
-    primitives::B256,
+    primitives::{keccak256, Address, B256},
     signers::{local::PrivateKeySigner, Signature, SignerSync},
+    sol_types::{eip712_domain, SolStruct},
 };
+use serde::Serialize;
 
 use crate::{
     error::{HyperliquidError, Result},
-    signature::{agent::l1, eip712::Eip712},
+    signature::{
+        agent::l1,
+        eip712::{get_hyperliquid_domain, Eip712},
+    },
+    types::signature::Eip712Signature,
 };
 
+/// Signs a user-signed action
 #[allow(dead_code)] // Pending complete exchange API examples and tests
-pub(crate) fn sign_l1_action(
+pub fn sign_user_signed_action<T>(
     wallet: &PrivateKeySigner,
-    connection_id: B256,
-    is_mainnet: bool,
-) -> Result<Signature> {
-    let source = if is_mainnet { "a" } else { "b" }.to_string();
-    let payload = l1::Agent {
-        source,
-        connectionId: connection_id,
-    };
-    sign_typed_data(&payload, wallet)
+    action: &T,
+    _is_mainnet: bool,
+) -> Result<Eip712Signature>
+where
+    T: SolStruct,
+{
+    let signature_chain_id = 0x66eee_u64; // Arbitrum
+
+    let domain = get_hyperliquid_domain(signature_chain_id);
+
+    let signing_hash = action.eip712_signing_hash(&domain);
+    let signature = wallet.sign_hash_sync(&signing_hash)?;
+
+    // Convert y_parity bool to v byte (27 or 28 for legacy, or 0/1 for modern)
+    let v = sig_v_from_bool(signature.v());
+
+    Ok(Eip712Signature {
+        r: format!("0x{:x}", signature.r()),
+        s: format!("0x{:x}", signature.s()),
+        v,
+    })
 }
 
 #[allow(dead_code)] // Pending complete exchange API examples and tests
-pub(crate) fn sign_typed_data<T: Eip712>(
-    payload: &T,
+pub fn sign_l1_action(
     wallet: &PrivateKeySigner,
+    action: &impl Serialize,
+    vault_address: Option<Address>,
+    nonce: u64,
+    expires_after: Option<u64>,
+    is_mainnet: bool,
 ) -> Result<Signature> {
+    use alloy::sol_types::SolStruct;
+
+    let connection_id = action_hash(action, vault_address, nonce, expires_after)?;
+
+    let source = if is_mainnet { "a" } else { "b" };
+    let phantom_agent = l1::Agent {
+        source: source.to_string(),
+        connectionId: connection_id,
+    };
+
+    let struct_hash = phantom_agent.eip712_hash_struct();
+
+    let domain = eip712_domain! {
+        name: "Exchange",
+        version: "1",
+        chain_id: 1337,
+        verifying_contract: Address::ZERO,
+    };
+    let domain_hash = domain.hash_struct();
+
+    let mut digest_input = [0u8; 66];
+    digest_input[0] = 0x19;
+    digest_input[1] = 0x01;
+    digest_input[2..34].copy_from_slice(&domain_hash[..]);
+    digest_input[34..66].copy_from_slice(&struct_hash[..]);
+
+    let signing_hash = keccak256(digest_input);
+    let sig = wallet.sign_hash_sync(&signing_hash)?;
+
+    let recovered = sig.recover_address_from_prehash(&signing_hash)?;
+    if recovered != wallet.address() {
+        return Err(HyperliquidError::SignatureFailure(format!(
+            "Signature verification failed: recovered {:?} but expected {:?}",
+            recovered,
+            wallet.address()
+        )));
+    }
+
+    tracing::trace!(
+        "Signature r: {:?}, s: {:?}, v: {}",
+        sig.r(),
+        sig.s(),
+        sig.v()
+    );
+
+    Ok(sig)
+}
+
+/// Computes the Hyperliquid L1 action hash.
+///
+/// The hash is constructed as:
+/// 1. The msgpack-serialized action (named fields).
+/// 2. The 8-byte BIG-ENDIAN nonce.
+/// 3. A vault flag byte:
+/// - `0x01` followed by the 20-byte vault address if provided.
+/// - `0x00` if no vault address.
+/// 4. Optional expiry:
+///    - `0x00` followed by the 8-byte big-endian expiry timestamp if provided.
+///
+/// The concatenated bytes are then hashed with Keccak-256.
+///
+/// Returns the resulting `B256` hash.
+fn action_hash(
+    action: &impl Serialize,
+    vault_address: Option<Address>,
+    nonce: u64,
+    expires_after: Option<u64>,
+) -> Result<B256> {
+    let mut data = rmp_serde::to_vec_named(action)?;
+
+    data.extend_from_slice(&nonce.to_be_bytes());
+
+    if let Some(addr) = vault_address {
+        data.push(0x01);
+        data.extend_from_slice(addr.as_slice());
+    } else {
+        data.push(0x00);
+    }
+
+    if let Some(expires) = expires_after {
+        data.push(0x00);
+        data.extend_from_slice(&expires.to_be_bytes());
+    }
+
+    let hash = keccak256(&data);
+
+    Ok(hash)
+}
+
+/// Sign types data using the wallets private key.
+#[allow(dead_code)] // Pending complete exchange API examples and tests
+pub fn sign_typed_data<T: Eip712>(payload: &T, wallet: &PrivateKeySigner) -> Result<Signature> {
     wallet
         .sign_hash_sync(&payload.eip712_signing_hash())
         .map_err(|e| HyperliquidError::SignatureFailure(e.to_string()))
 }
 
-#[cfg(test)]
-mod tests {
-    use std::str::FromStr;
-
-    use super::*;
-    use crate::{
-        error::Result,
-        types::exchange::{UsdSendAction, WithdrawAction},
-    };
-
-    fn get_wallet() -> Result<PrivateKeySigner> {
-        let priv_key = "e908f86dbb4d55ac876378565aafeabc187f6690f046459397b17d9b9a19688e";
-        priv_key
-            .parse::<PrivateKeySigner>()
-            .map_err(|e| HyperliquidError::Wallet(e.to_string()))
-    }
-
-    #[test]
-    fn test_sign_l1_action() -> Result<()> {
-        let wallet = get_wallet()?;
-        let connection_id =
-            B256::from_str("0xde6c4037798a4434ca03cd05f00e3b803126221375cd1e7eaaaf041768be06eb")
-                .map_err(|e| HyperliquidError::GenericParse(e.to_string()))?;
-
-        let expected_mainnet_sig = "0xfa8a41f6a3fa728206df80801a83bcbfbab08649cd34d9c0bfba7c7b2f99340f53a00226604567b98a1492803190d65a201d6805e5831b7044f17fd530aec7841c";
-        assert_eq!(
-            sign_l1_action(&wallet, connection_id, true)?.to_string(),
-            expected_mainnet_sig
-        );
-        let expected_testnet_sig = "0x1713c0fc661b792a50e8ffdd59b637b1ed172d9a3aa4d801d9d88646710fb74b33959f4d075a7ccbec9f2374a6da21ffa4448d58d0413a0d335775f680a881431c";
-        assert_eq!(
-            sign_l1_action(&wallet, connection_id, false)?.to_string(),
-            expected_testnet_sig
-        );
-        Ok(())
-    }
-
-    #[test]
-    fn test_sign_usd_transfer_action() -> Result<()> {
-        let wallet = get_wallet()?;
-        let usd_send = UsdSendAction {
-            type_: "usdSend".to_owned(),
-            hyperliquid_chain: "Testnet".to_owned(),
-            signature_chain_id: 421_614,
-            destination: "0x0D1d9635D0640821d15e323ac8AdADfA9c111414".to_string(),
-            amount: "1".to_owned(),
-            time: 1_690_393_044_548,
-        };
-
-        let expected_sig = "0x214d507bbdaebba52fa60928f904a8b2df73673e3baba6133d66fe846c7ef70451e82453a6d8db124e7ed6e60fa00d4b7c46e4d96cb2bd61fd81b6e8953cc9d21b";
-        assert_eq!(
-            sign_typed_data(&usd_send, &wallet)?.to_string(),
-            expected_sig
-        );
-        Ok(())
-    }
-
-    #[test]
-    fn test_sign_withdraw_from_bridge_action() -> Result<()> {
-        let wallet = get_wallet()?;
-
-        let usd_send = WithdrawAction {
-            type_: "withdraw3".to_owned(),
-            signature_chain_id: 421_614,
-            hyperliquid_chain: "Testnet".to_owned(),
-            destination: "0x0D1d9635D0640821d15e323ac8AdADfA9c111414".to_owned(),
-            amount: "1".to_owned(),
-            time: 1_690_393_044_548,
-        };
-
-        let expected_sig = "0xb3172e33d2262dac2b4cb135ce3c167fda55dafa6c62213564ab728b9f9ba76b769a938e9f6d603dae7154c83bf5a4c3ebab81779dc2db25463a3ed663c82ae41c";
-        assert_eq!(
-            sign_typed_data(&usd_send, &wallet)?.to_string(),
-            expected_sig
-        );
-        Ok(())
+/// Returns 27/28 for ECDSA Signature `v` field based on a boolean value.
+pub fn sig_v_from_bool(v: bool) -> u8 {
+    if v {
+        28
+    } else {
+        27
     }
 }

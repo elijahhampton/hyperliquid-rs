@@ -1,4 +1,6 @@
-use hyperliquid_rs::{client::HyperliquidClientBuilder, helpers::user, init_tracing::init_tracing};
+use hyperliquid_rs::{
+    client::HyperliquidClientBuilder, example_helpers::user, init_tracing::init_tracing,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

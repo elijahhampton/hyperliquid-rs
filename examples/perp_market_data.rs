@@ -1,7 +1,7 @@
 use hyperliquid_rs::{
     api::current_time_millis,
     client::HyperliquidClientBuilder,
-    helpers::user,
+    example_helpers::user,
     init_tracing::init_tracing,
     types::info::{perpetual::PerpetualDex, user::CandleSnapshotRequest},
 };

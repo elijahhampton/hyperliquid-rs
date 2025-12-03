@@ -22,18 +22,22 @@ pub struct OrderResponseData {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum OrderResponseInner {
+    Error(String),
+    Ok(OrderResponseInnerOk),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OrderResponseInner {
-    /// "order"
+pub struct OrderResponseInnerOk {
     #[serde(rename = "type")]
     pub type_: String,
     pub data: OrderResponseData,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct OrderResponse {
-    /// "ok"
     pub status: String,
     pub response: OrderResponseInner,
 }

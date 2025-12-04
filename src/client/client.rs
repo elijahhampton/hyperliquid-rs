@@ -2,6 +2,7 @@ use crate::{
     api::{exchange::ExchangeApi, info::InfoApi},
     client::HyperliquidClientBuilder,
     error::Result,
+    types::chain::NetworkType,
 };
 use alloy::signers::local::PrivateKeySigner;
 use reqwest::{Client, ClientBuilder};
@@ -16,23 +17,33 @@ pub struct Inner {
     http_client: Client,
     base_url: String,
     wallet: Option<PrivateKeySigner>,
+    network: NetworkType,
 }
 
 impl Inner {
-    pub fn new(base_url: String, wallet: Option<PrivateKeySigner>) -> Result<Self> {
+    pub fn new(
+        network: NetworkType,
+        base_url: String,
+        wallet: Option<PrivateKeySigner>,
+    ) -> Result<Self> {
         let http_client = ClientBuilder::new().build()?;
 
         Ok(Self {
             http_client,
             base_url,
             wallet,
+            network,
         })
     }
 }
 
 impl HyperliquidClient {
-    pub fn new(base_url: String, wallet: Option<PrivateKeySigner>) -> Result<Self> {
-        let inner = Arc::new(Inner::new(base_url, wallet)?);
+    pub fn new(
+        network: NetworkType,
+        base_url: String,
+        wallet: Option<PrivateKeySigner>,
+    ) -> Result<Self> {
+        let inner = Arc::new(Inner::new(network, base_url, wallet)?);
 
         Ok(Self { inner })
     }
@@ -53,11 +64,22 @@ impl HyperliquidClient {
         self.inner.wallet.as_ref()
     }
 
+    pub fn network_type(&self) -> &NetworkType {
+        &self.inner.network
+    }
+
     pub fn info(&self) -> InfoApi<'_> {
         InfoApi::new(self)
     }
 
     pub fn exchange(&self) -> ExchangeApi<'_> {
         ExchangeApi::new(self)
+    }
+
+    pub fn is_mainnet(&self) -> bool {
+        match self.inner.network {
+            NetworkType::Mainnet => true,
+            NetworkType::Testnet => false,
+        }
     }
 }

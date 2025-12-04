@@ -53,7 +53,6 @@ impl CancelStatus {
     }
 }
 
-/// Response type for TWAP order
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RunningTwap {
@@ -61,73 +60,48 @@ pub struct RunningTwap {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TwapStatus {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub running: Option<RunningTwap>,
+#[serde(untagged)]
+pub enum TwapOrderStatus {
+    Running { running: RunningTwap },
+    Error { error: String },
+}
+
+impl TwapOrderStatus {
+    pub fn is_running(&self) -> bool {
+        matches!(self, Self::Running { .. })
+    }
+
+    pub fn twap_id(&self) -> Option<u64> {
+        match self {
+            Self::Running { running } => Some(running.twap_id),
+            Self::Error { .. } => None,
+        }
+    }
+
+    pub fn error_message(&self) -> Option<&str> {
+        match self {
+            Self::Error { error } => Some(error),
+            Self::Running { .. } => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TwapOrderResponseData {
-    pub status: TwapStatus,
+#[serde(untagged)]
+pub enum TwapCancelStatus {
+    Success(String),
+    Error { error: String },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TwapOrderResponseInner {
-    /// "twapOrder"
-    #[serde(rename = "type")]
-    pub type_: String,
-    pub data: TwapOrderResponseData,
-}
+impl TwapCancelStatus {
+    pub fn is_success(&self) -> bool {
+        matches!(self, Self::Success(s) if s == "success")
+    }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TwapOrderResponse {
-    /// "ok"
-    pub status: String,
-    pub response: TwapOrderResponseInner,
-}
-
-/// Response type for TWAP cancel
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TwapCancelResponseData {
-    /// "success"
-    pub status: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TwapCancelResponseInner {
-    /// "twapCancel"
-    #[serde(rename = "type")]
-    pub type_: String,
-    pub data: TwapCancelResponseData,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TwapCancelResponse {
-    /// "ok"
-    pub status: String,
-    pub response: TwapCancelResponseInner,
-}
-
-/// Generic default response for actions
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DefaultResponseInner {
-    /// "default"
-    #[serde(rename = "type")]
-    pub type_: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DefaultResponse {
-    /// "ok"
-    pub status: String,
-    pub response: DefaultResponseInner,
+    pub fn error_message(&self) -> Option<&str> {
+        match self {
+            Self::Error { error } => Some(error),
+            Self::Success(_) => None,
+        }
+    }
 }

@@ -1,3 +1,4 @@
+pub mod chain;
 pub mod exchange;
 pub mod info;
 pub mod serialize;

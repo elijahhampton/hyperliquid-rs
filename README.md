@@ -1,8 +1,8 @@
 # hyperliquid-rs
 
-A unofficial Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perpetuals decentralized exchange. Built with type safety in mind and async-first architecture.
+An unofficial Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perpetuals decentralized exchange. Built with type safety in mind and async-first architecture.
 
-⚠️ ** This SDK is still under development. It is not yet suitable for production trading. Current stable for: **
+⚠️ **This SDK is still under development. It is not yet suitable for production trading. Current stable for:**
 
 **Safe to use:**
 - Market data queries (spot & perpetuals)
@@ -84,25 +84,11 @@ cargo doc --open
 
 ### Minimum Supported Rust Version (MSRV)
 
-Rust **1.75.0** or higher is required. This project uses Rust 2021 edition features.
+Rust **1.75.0** or higher is required.
 
 ```bash
 # Verify your Rust version
 rustc --version
 
 rustup update stable
-```
-## Architecture
-
-### Async-First
-
-Built on `tokio` for high-concurrency workloads:
-
-```rust
-// Concurrent requests with structured concurrency
-let (mids, meta, book) = tokio::join!(
-    client.info().get_all_mids(),
-    client.info().get_meta(),
-    client.info().get_l2_book("BTC"),
-);
 ```

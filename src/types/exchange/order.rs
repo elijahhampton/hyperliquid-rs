@@ -9,7 +9,7 @@ use alloy::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::types::serialize::{serialize_decimal, serialize_hex};
+use crate::types::serialize::serialize_decimal;
 
 fn eip_712_domain(chain_id: u64) -> Eip712Domain {
     eip712_domain! {
@@ -216,7 +216,7 @@ pub struct UpdateIsolatedMarginAction {
     pub type_: String,
     pub asset: u32,
     pub is_buy: bool,
-    pub ntli: i64,
+    pub ntli: u32,
 }
 
 /// Request type for POST /exchange with type "usdSend"
@@ -228,9 +228,6 @@ pub struct UsdSendAction {
     pub type_: String,
     /// "Mainnet" | "Testnet"
     pub hyperliquid_chain: String,
-    /// `signature_chain_id` is a String type in the action
-    /// payload and is serialized from u64. e.g. "0xa4b1"
-    #[serde(serialize_with = "serialize_hex")]
     pub signature_chain_id: u64,
     pub destination: String,
     pub amount: String,
@@ -263,7 +260,6 @@ pub struct SpotSendAction {
     pub type_: String,
     /// "Mainnet" | "Testnet"
     pub hyperliquid_chain: String,
-    #[serde(serialize_with = "serialize_hex")]
     pub signature_chain_id: u64,
     pub destination: String,
     /// e.g. "PURR:0xc4bf3f870c0e9465323c0b6ed28096c2"
@@ -298,7 +294,6 @@ pub struct WithdrawAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    #[serde(serialize_with = "serialize_hex")]
     pub signature_chain_id: u64,
     pub amount: String,
     pub time: u64,
@@ -330,7 +325,6 @@ pub struct UsdClassTransferAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    #[serde(serialize_with = "serialize_hex")]
     pub signature_chain_id: u64,
     pub amount: String,
     pub to_perp: bool,
@@ -345,7 +339,6 @@ pub struct SendAssetAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    #[serde(serialize_with = "serialize_hex")]
     pub signature_chain_id: u64,
     pub destination: String,
     pub source_dex: String,
@@ -385,7 +378,7 @@ pub struct CDepositAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    pub signature_chain_id: String,
+    pub signature_chain_id: u64,
     pub wei: u64,
     pub nonce: u64,
 }
@@ -398,7 +391,6 @@ pub struct CWithdrawAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    #[serde(serialize_with = "serialize_hex")]
     pub signature_chain_id: u64,
     pub wei: u64,
     pub nonce: u64,
@@ -412,7 +404,6 @@ pub struct TokenDelegateAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    #[serde(serialize_with = "serialize_hex")]
     pub signature_chain_id: u64,
     pub validator: String,
     pub is_undelegate: bool,
@@ -440,7 +431,6 @@ pub struct ApproveAgentAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    #[serde(serialize_with = "serialize_hex")]
     pub signature_chain_id: u64,
     pub agent_address: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -473,7 +463,6 @@ pub struct ApproveBuilderFeeAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    #[serde(serialize_with = "serialize_hex")]
     pub signature_chain_id: u64,
     /// e.g. "0.001%"
     pub max_fee_rate: String,
@@ -532,9 +521,9 @@ pub struct TwapCancelAction {
     #[serde(rename = "type")]
     pub type_: String,
     /// Asset index
-    pub a: u32,
+    pub a: usize,
     /// TWAP ID
-    pub t: u64,
+    pub t: u32,
 }
 
 /// Request type for POST /exchange with type "reserveRequestWeight"
@@ -564,7 +553,6 @@ pub struct UserDexAbstractionAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
-    #[serde(serialize_with = "serialize_hex")]
     pub signature_chain_id: u64,
     pub user: String,
     pub enabled: bool,
@@ -587,6 +575,6 @@ pub struct ValidatorL1StreamAction {
     /// "validatorL1Stream"
     #[serde(rename = "type")]
     pub type_: String,
-    /// e.g. "0.04"
+    /// e.g. "0.04" for 4%
     pub risk_free_rate: String,
 }

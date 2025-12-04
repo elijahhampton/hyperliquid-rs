@@ -1,16 +1,10 @@
-use crate::{client::HyperliquidClient, error::HyperliquidError};
+use crate::{client::HyperliquidClient, error::HyperliquidError, types::chain::NetworkType};
 use alloy::signers::local::PrivateKeySigner;
-
-/// Represents the Hyperliquid Mainnet and Testnet chains.
-enum Network {
-    Mainnet,
-    Testnet,
-}
 
 /// Builder for configuring and produce a [`HyperliquidClient`].
 pub struct HyperliquidClientBuilder {
     base_url: Option<String>,
-    network: Option<Network>,
+    network: Option<NetworkType>,
     wallet: Option<PrivateKeySigner>,
 }
 
@@ -34,14 +28,14 @@ impl HyperliquidClientBuilder {
     #[inline]
     pub fn testnet(&mut self) -> &mut Self {
         self.base_url = Some("https://api.hyperliquid-testnet.xyz".to_owned());
-        self.network = Some(Network::Testnet);
+        self.network = Some(NetworkType::Testnet);
         self
     }
 
     #[inline]
     pub fn mainnet(&mut self) -> &mut Self {
         self.base_url = Some("https://api.hyperliquid.xyz".to_owned());
-        self.network = Some(Network::Mainnet);
+        self.network = Some(NetworkType::Mainnet);
         self
     }
 
@@ -65,6 +59,10 @@ impl HyperliquidClientBuilder {
             .ok_or(HyperliquidError::MissingConfiguration {
                 parameter: "base_url".to_owned(),
             })?;
-        HyperliquidClient::new(base_url, self.wallet.clone())
+
+        // Default to Testnet
+        let network = self.network.clone().unwrap_or(NetworkType::Testnet);
+
+        HyperliquidClient::new(network, base_url, self.wallet.clone())
     }
 }

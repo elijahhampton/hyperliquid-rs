@@ -1,7 +1,9 @@
+#[allow(unused_imports)]
 use hyperliquid_rs::{
     example_helpers::load_signer,
     init_tracing::init_tracing,
     prelude::{
+        current_time_millis,
         exchange::{CancelRequest, Grouping, LimitOrderType, OrderRequest, OrderType, Tif},
         response::ResponseInner,
         HyperliquidClientBuilder,

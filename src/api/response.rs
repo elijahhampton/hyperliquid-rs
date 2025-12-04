@@ -1,4 +1,7 @@
-use crate::types::exchange::{base::CancelStatus, OrderStatus};
+use crate::types::exchange::{
+    base::{CancelStatus, TwapCancelStatus, TwapOrderStatus},
+    OrderStatus,
+};
 use serde::{Deserialize, Serialize};
 
 /// General response type returns from a SDK function call.
@@ -33,8 +36,6 @@ pub struct OrderResponseData {
     pub statuses: Vec<OrderStatus>,
 }
 
-pub type OrderResponse = Response<ResponseBody<OrderResponseData>>;
-
 /// Response data for the `cancel_order` function.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -42,4 +43,55 @@ pub struct CancelResponseData {
     pub statuses: Vec<CancelStatus>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TwapOrderResponseData {
+    pub status: TwapOrderStatus,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TwapCancelResponseData {
+    pub status: TwapCancelStatus,
+}
+
+// Order responses
+pub type OrderResponse = Response<ResponseBody<OrderResponseData>>;
 pub type CancelResponse = Response<ResponseBody<CancelResponseData>>;
+pub type CancelByCloidResponse = CancelResponse;
+pub type ModifyResponse = OrderResponse;
+pub type BatchModifyResponse = OrderResponse;
+
+// TWAP responses
+pub type TwapOrderResponse = Response<ResponseBody<TwapOrderResponseData>>;
+pub type TwapCancelResponse = Response<ResponseBody<TwapCancelResponseData>>;
+
+// Default responses (return {'status': 'ok', 'response': {'type': 'default'}})
+pub type DefaultResponse = Response<DefaultResponseBody>;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DefaultResponseBody {
+    #[serde(rename = "type")]
+    pub type_: String,
+}
+
+pub type ScheduleCancelResponse = DefaultResponse;
+pub type UpdateLeverageResponse = DefaultResponse;
+pub type UpdateIsolatedMarginResponse = DefaultResponse;
+pub type UsdSendResponse = DefaultResponse;
+pub type SpotSendResponse = DefaultResponse;
+pub type WithdrawResponse = DefaultResponse;
+pub type UsdClassTransferResponse = DefaultResponse;
+pub type SendAssetResponse = DefaultResponse;
+pub type CDepositResponse = DefaultResponse;
+pub type CWithdrawResponse = DefaultResponse;
+pub type TokenDelegateResponse = DefaultResponse;
+pub type VaultTransferResponse = DefaultResponse;
+pub type ApproveAgentResponse = DefaultResponse;
+pub type ApproveBuilderFeeResponse = DefaultResponse;
+pub type ReserveRequestWeightResponse = DefaultResponse;
+pub type NoopResponse = DefaultResponse;
+pub type UserDexAbstractionResponse = DefaultResponse;
+pub type AgentEnableDexAbstractionResponse = DefaultResponse;
+pub type ValidatorL1StreamResponse = DefaultResponse;

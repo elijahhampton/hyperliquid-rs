@@ -2,16 +2,15 @@
 
 An unofficial Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perpetuals decentralized exchange. Built with type safety in mind and async-first architecture.
 
-⚠️ **This SDK is still under development. It is not yet suitable for production trading. Current stable for:**
+⚠️ **Please test all desired operations on Testnet before operating on Mainnet**
 
-**Safe to use:**
+## Features
+
 - Market data queries (spot & perpetuals)
 - Account information retrieval
 - Order book snapshots
 - Historical candle data
 - User fills and funding history
-
-**Experimental (testnet only):**
 - Order placement and cancellation
 - Position management
 - Vault operations

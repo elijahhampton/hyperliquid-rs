@@ -17,7 +17,7 @@ pub static SUPPORTED_INTERVALS: Lazy<HashSet<&'static str>> = Lazy::new(|| {
 
 /// Helper function for creating [`InvalidRequestParameter`] errors.
 #[inline]
-pub const fn err_request_invalid_hyperliquid_address(
+pub(crate) const fn err_request_invalid_hyperliquid_address(
     method: String,
     parameter: String,
     reason: String,
@@ -42,7 +42,11 @@ pub fn current_time_millis() -> u64 {
 }
 
 /// Sends a POST request with a JSON body to a url.
-pub async fn post_json<T>(client: &reqwest::Client, url: &str, body: serde_json::Value) -> Result<T>
+pub(crate) async fn post_json<T>(
+    client: &reqwest::Client,
+    url: &str,
+    body: serde_json::Value,
+) -> Result<T>
 where
     T: DeserializeOwned,
 {

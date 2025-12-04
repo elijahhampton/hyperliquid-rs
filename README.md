@@ -47,6 +47,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+## Trading
+
+For order placement and cancellation examples, see [`examples/basic_order.rs`](examples/basic_order.rs).
+
 ## Installation
 
 ### As a Library Dependency

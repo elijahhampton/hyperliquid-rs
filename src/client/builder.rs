@@ -65,6 +65,6 @@ impl HyperliquidClientBuilder {
             .ok_or(HyperliquidError::MissingConfiguration {
                 parameter: "base_url".to_owned(),
             })?;
-        HyperliquidClient::new(base_url)
+        HyperliquidClient::new(base_url, self.wallet.clone())
     }
 }

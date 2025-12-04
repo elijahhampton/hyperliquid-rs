@@ -3,6 +3,7 @@ use crate::{
     client::HyperliquidClientBuilder,
     error::Result,
 };
+use alloy::signers::local::PrivateKeySigner;
 use reqwest::{Client, ClientBuilder};
 use std::sync::Arc;
 
@@ -14,22 +15,24 @@ pub struct HyperliquidClient {
 pub struct Inner {
     http_client: Client,
     base_url: String,
+    wallet: Option<PrivateKeySigner>,
 }
 
 impl Inner {
-    pub fn new(base_url: String) -> Result<Self> {
+    pub fn new(base_url: String, wallet: Option<PrivateKeySigner>) -> Result<Self> {
         let http_client = ClientBuilder::new().build()?;
 
         Ok(Self {
             http_client,
             base_url,
+            wallet,
         })
     }
 }
 
 impl HyperliquidClient {
-    pub fn new(base_url: String) -> Result<Self> {
-        let inner = Arc::new(Inner::new(base_url)?);
+    pub fn new(base_url: String, wallet: Option<PrivateKeySigner>) -> Result<Self> {
+        let inner = Arc::new(Inner::new(base_url, wallet)?);
 
         Ok(Self { inner })
     }
@@ -44,6 +47,10 @@ impl HyperliquidClient {
 
     pub fn base_url(&self) -> &str {
         &self.inner.base_url
+    }
+
+    pub fn signer(&self) -> Option<&PrivateKeySigner> {
+        self.inner.wallet.as_ref()
     }
 
     pub fn info(&self) -> InfoApi<'_> {

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 /// Request and response types for WebSocket subscriptions and streaming data.
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

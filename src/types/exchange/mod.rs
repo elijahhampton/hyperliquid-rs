@@ -2,8 +2,7 @@ pub mod base;
 pub mod order;
 
 pub use base::{
-    CancelResponse, CancelResponseData, CancelResponseInner, DefaultResponse, DefaultResponseInner,
-    OrderResponse, OrderResponseData, OrderResponseInner, OrderStatus, RestingOrder, RunningTwap,
+    DefaultResponse, DefaultResponseInner, OrderStatus, RestingOrder, RunningTwap,
     TwapCancelResponse, TwapCancelResponseData, TwapCancelResponseInner, TwapOrderResponse,
     TwapOrderResponseData, TwapOrderResponseInner, TwapStatus,
 };

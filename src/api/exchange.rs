@@ -1,14 +1,17 @@
+use crate::api::{current_time_millis, CancelResponse, OrderResponse};
 use crate::error::{HyperliquidError, Result};
+use crate::signature::sign::{sig_v_from_bool, sign_l1_action};
+use crate::types::exchange::{Builder, CancelAction, CancelRequest, Grouping, OrderRequest};
 use crate::types::signature::Eip712Signature;
 use crate::{
     api::request_util::post_json,
     client::HyperliquidClient,
     types::exchange::{
         AgentEnableDexAbstractionAction, ApproveAgentAction, ApproveBuilderFeeAction,
-        BatchModifyAction, CDepositAction, CWithdrawAction, CancelResponseData, DefaultResponse,
-        ModifyAction, OrderAction, OrderResponse, ReserveRequestWeightAction, ScheduleCancelAction,
-        SendAssetAction, TokenDelegateAction, TwapCancelAction, TwapCancelResponse,
-        TwapOrderAction, TwapOrderResponse, UpdateIsolatedMarginAction, UpdateLeverageAction,
+        BatchModifyAction, CDepositAction, CWithdrawAction, DefaultResponse, ModifyAction,
+        OrderAction, ReserveRequestWeightAction, ScheduleCancelAction, SendAssetAction,
+        TokenDelegateAction, TwapCancelAction, TwapCancelResponse, TwapOrderAction,
+        TwapOrderResponse, UpdateIsolatedMarginAction, UpdateLeverageAction,
         UsdClassTransferAction, UsdSendAction, UserDexAbstractionAction, ValidatorL1StreamAction,
         VaultTransferAction, WithdrawAction,
     },
@@ -61,7 +64,7 @@ impl<'client> ExchangeApi<'client> {
         .await
     }
 
-    /// Places an order on Hyperliquid.
+    /// Place an order on Hyperliquid.
     ///
     /// For limit orders, TIF (time-in-force) sets the behavior of the order upon first hitting the book.
     /// ALO (add liquidity only, i.e. "post only") will be canceled instead of immediately matching.
@@ -70,12 +73,53 @@ impl<'client> ExchangeApi<'client> {
     /// Client Order ID (cloid) is an optional 128 bit hex string, e.g. 0x1234567890abcdef1234567890abcdef
     pub async fn place_order(
         &self,
-        action: OrderAction,
-        nonce: u64,
-        signature: Eip712Signature,
+        order: OrderRequest,
+        grouping: Grouping,
+        builder: Option<Builder>,
         vault_address: Option<String>,
         expires_after: Option<u64>,
     ) -> Result<OrderResponse> {
+        self.bulk_orders(vec![order], grouping, builder, vault_address, expires_after)
+            .await
+    }
+
+    /// Places multiple orders on Hyperliquid.
+    ///
+    /// For limit orders, TIF (time-in-force) sets the behavior of the order upon first hitting the book.
+    /// ALO (add liquidity only, i.e. "post only") will be canceled instead of immediately matching.
+    /// IOC (immediate or cancel) will have the unfilled part canceled instead of resting.
+    /// GTC (good til canceled) orders have no special behavior.
+    /// Client Order ID (cloid) is an optional 128 bit hex string, e.g. 0x1234567890abcdef1234567890abcdef
+    pub async fn bulk_orders(
+        &self,
+        orders: Vec<OrderRequest>,
+        grouping: Grouping,
+        builder: Option<Builder>,
+        vault_address: Option<String>,
+        expires_after: Option<u64>,
+    ) -> Result<OrderResponse> {
+        let signer = self
+            .client
+            .signer()
+            .ok_or_else(|| HyperliquidError::SignerRequired)?;
+
+        let nonce = current_time_millis();
+
+        let action = OrderAction {
+            type_: "order".to_owned(),
+            orders,
+            grouping,
+            builder,
+        };
+
+        let sig = sign_l1_action(&signer, &action, None, nonce, None, false)?;
+
+        let signature = Eip712Signature {
+            r: format!("0x{:x}", sig.r()),
+            s: format!("0x{:x}", sig.s()),
+            v: sig_v_from_bool(sig.v()),
+        };
+
         let mut payload = json!({
             "action": action,
             "nonce": nonce,
@@ -101,12 +145,40 @@ impl<'client> ExchangeApi<'client> {
 
     pub async fn cancel_order(
         &self,
-        action: OrderAction,
-        nonce: u64,
-        signature: Signature,
+        cancel: CancelRequest,
         vault_address: Option<String>,
         expires_after: Option<u64>,
-    ) -> Result<CancelResponseData> {
+    ) -> Result<CancelResponse> {
+        self.bulk_cancel_orders(vec![cancel], vault_address, expires_after)
+            .await
+    }
+
+    pub async fn bulk_cancel_orders(
+        &self,
+        cancels: Vec<CancelRequest>,
+        vault_address: Option<String>,
+        expires_after: Option<u64>,
+    ) -> Result<CancelResponse> {
+        let signer = self
+            .client
+            .signer()
+            .ok_or_else(|| HyperliquidError::SignerRequired)?;
+
+        let action = CancelAction {
+            type_: "cancel".to_string(),
+            cancels,
+        };
+
+        let nonce = current_time_millis();
+
+        let sig = sign_l1_action(&signer, &action, None, nonce, None, false)?;
+
+        let signature = Eip712Signature {
+            r: format!("0x{:x}", sig.r()),
+            s: format!("0x{:x}", sig.s()),
+            v: sig_v_from_bool(sig.v()),
+        };
+
         let mut payload = json!({
             "action": action,
             "nonce": nonce,
@@ -137,7 +209,7 @@ impl<'client> ExchangeApi<'client> {
         signature: Signature,
         vault_address: Option<String>,
         expires_after: Option<u64>,
-    ) -> Result<CancelResponseData> {
+    ) -> Result<CancelResponse> {
         let mut payload = json!({
             "action": action,
             "nonce": nonce,

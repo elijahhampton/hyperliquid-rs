@@ -16,6 +16,8 @@ pub enum HyperliquidError {
         parameter: String,
         reason: String,
     },
+    #[error("Function requires wallet/signer.")]
+    SignerRequired,
     #[error("{0}")]
     AlloySignError(#[from] alloy::signers::Error),
     #[error("{0}")]

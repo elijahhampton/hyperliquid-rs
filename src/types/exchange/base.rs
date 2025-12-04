@@ -1,7 +1,5 @@
-/// Request and response types for the exchange endpoint used to interact with and trade on the Hyperliquid chain.
 use serde::{Deserialize, Serialize};
 
-/// Response type for successful order placement (resting)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RestingOrder {
@@ -9,62 +7,50 @@ pub struct RestingOrder {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct OrderStatus {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub resting: Option<RestingOrder>,
+#[serde(untagged)]
+pub enum OrderStatus {
+    Resting { resting: RestingOrder },
+    Error { error: String },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct OrderResponseData {
-    pub statuses: Vec<OrderStatus>,
+impl OrderStatus {
+    pub fn is_resting(&self) -> bool {
+        matches!(self, Self::Resting { .. })
+    }
+
+    pub fn oid(&self) -> Option<u64> {
+        match self {
+            Self::Resting { resting } => Some(resting.oid),
+            Self::Error { .. } => None,
+        }
+    }
+
+    pub fn error_message(&self) -> Option<&str> {
+        match self {
+            Self::Error { error } => Some(error),
+            Self::Resting { .. } => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum OrderResponseInner {
-    Error(String),
-    Ok(OrderResponseInnerOk),
+pub enum CancelStatus {
+    Success(String),
+    Error { error: String },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct OrderResponseInnerOk {
-    #[serde(rename = "type")]
-    pub type_: String,
-    pub data: OrderResponseData,
-}
+impl CancelStatus {
+    pub fn is_success(&self) -> bool {
+        matches!(self, Self::Success(s) if s == "success")
+    }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct OrderResponse {
-    pub status: String,
-    pub response: OrderResponseInner,
-}
-
-/// Response type for cancel actions
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CancelResponseData {
-    /// "success" | error message
-    pub statuses: Vec<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CancelResponseInner {
-    /// "cancel"
-    #[serde(rename = "type")]
-    pub type_: String,
-    pub data: CancelResponseData,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CancelResponse {
-    /// "ok"
-    pub status: String,
-    pub response: CancelResponseInner,
+    pub fn error_message(&self) -> Option<&str> {
+        match self {
+            Self::Error { error } => Some(error),
+            Self::Success(_) => None,
+        }
+    }
 }
 
 /// Response type for TWAP order

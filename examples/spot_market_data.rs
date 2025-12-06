@@ -1,5 +1,5 @@
 use hyperliquid_rs::{
-    client::HyperliquidClientBuilder, example_helpers::user, init_tracing::init_tracing,
+   example_helpers::user, init_tracing::init_tracing, prelude::HyperliquidClientBuilder,
 };
 
 #[tokio::main]

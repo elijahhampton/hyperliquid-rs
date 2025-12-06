@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tracing;
 
-/// Hyperliquid supported time intervals for interval based request
+/// Supported time intervals for interval based request
 pub static SUPPORTED_INTERVALS: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     [
         "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "8h", "12h", "1d", "3d", "1w", "1M",
@@ -91,4 +91,41 @@ pub fn normalize_decimal(s: &str) -> String {
             }
         })
         .unwrap_or_else(|| s.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::normalize_decimal;
+
+    #[test]
+    fn test_removes_trailing_zeros() {
+        assert_eq!(normalize_decimal("1.50000000"), "1.5");
+        assert_eq!(normalize_decimal("100.00"), "100");
+        assert_eq!(normalize_decimal("25.86750000"), "25.8675");
+    }
+
+    #[test]
+    fn test_preserves_significant_decimals() {
+        assert_eq!(normalize_decimal("1.23456789"), "1.23456789");
+        assert_eq!(normalize_decimal("0.001"), "0.001");
+    }
+
+    #[test]
+    fn test_whole_numbers() {
+        assert_eq!(normalize_decimal("100"), "100");
+        assert_eq!(normalize_decimal("0"), "0");
+        assert_eq!(normalize_decimal("0.0"), "0");
+    }
+
+    #[test]
+    fn test_small_decimals() {
+        assert_eq!(normalize_decimal("0.00001"), "0.00001");
+        assert_eq!(normalize_decimal("0.10000"), "0.1");
+    }
+
+    #[test]
+    fn test_invalid_input() {
+        assert_eq!(normalize_decimal("not_a_number"), "not_a_number");
+        assert_eq!(normalize_decimal(""), "");
+    }
 }

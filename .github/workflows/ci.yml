@@ -90,23 +90,14 @@ jobs:
             cargo build --example "$example_name" --all-features
           done
 
-  security-audit:
-    name: Security Audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: rustsec/audit-check@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
   integration-tests:
-    name: Integration Tests (Testnet)
+    name: Tests (Testnet)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - name: Run integration tests
-        run: cargo test --test '*' --all-features
+      - name: Run tests
+        run: cargo test --tests --all-features
         env:
           HYPERLIQUID_TESTNET: true

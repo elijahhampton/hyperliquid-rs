@@ -1,9 +1,8 @@
 use hyperliquid_rs::{
-    api::current_time_millis,
-    client::HyperliquidClientBuilder,
+
     example_helpers::user,
-    init_tracing::init_tracing,
-    types::info::{perpetual::PerpetualDex, user::CandleSnapshotRequest},
+    init_tracing::init_tracing, prelude::{current_time_millis, info::{perpetual::PerpetualDex, user::CandleSnapshotRequest}, HyperliquidClientBuilder},
+
 };
 
 #[tokio::main]

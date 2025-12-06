@@ -7,10 +7,19 @@ pub struct RestingOrder {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FilledOrder {
+    pub total_sz: String,
+    pub avg_px: String,
+    pub oid: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum OrderStatus {
     Resting { resting: RestingOrder },
     Error { error: String },
+    Filled { filled: FilledOrder },
 }
 
 impl OrderStatus {
@@ -21,6 +30,7 @@ impl OrderStatus {
     pub fn oid(&self) -> Option<u64> {
         match self {
             Self::Resting { resting } => Some(resting.oid),
+            Self::Filled { filled } => Some(filled.oid),
             Self::Error { .. } => None,
         }
     }
@@ -28,7 +38,7 @@ impl OrderStatus {
     pub fn error_message(&self) -> Option<&str> {
         match self {
             Self::Error { error } => Some(error),
-            Self::Resting { .. } => None,
+            _ => None
         }
     }
 }

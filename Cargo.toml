@@ -131,6 +131,10 @@ name = "aligned_quote_token_status"
 path = "examples/aligned_quote_token_status.rs"
 
 [[example]]
+name = "leverage_position"
+path = "examples/leverage_position.rs"
+
+[[example]]
 name = "vault_details"
 path = "examples/vault_details.rs"
 

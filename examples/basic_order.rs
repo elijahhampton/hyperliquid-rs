@@ -1,10 +1,11 @@
+use hyperliquid_rs::prelude::exchange::LimitOrder;
 #[allow(unused_imports)]
 use hyperliquid_rs::{
     example_helpers::load_signer,
     init_tracing::init_tracing,
     prelude::{
         current_time_millis,
-        exchange::{CancelRequest, Grouping, LimitOrderType, OrderRequest, OrderType, Tif},
+        exchange::{CancelRequest, Grouping, OrderRequest, OrderType, Tif},
         response::ResponseInner,
         HyperliquidClientBuilder,
     },
@@ -38,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let all_mids = info_api.all_mids(None).await?;
     let doge_price = all_mids.get(&asset_id).unwrap();
 
-    let limit_order_type = LimitOrderType { tif: Tif::Gtc };
+    let limit_order_type = LimitOrder { tif: Tif::Gtc };
 
     if let Some((asset_idx, _)) = doge_asset_and_idx {
         let order_req = OrderRequest {

@@ -1,4 +1,4 @@
-use crate::signature::eip712::Eip712;
+use crate::{signature::eip712::Eip712, types::info::perpetual::AssetInfo};
 /// Request and response types for the exchange endpoint used to interact
 /// with and trade on the Hyperliquid chain.
 ///
@@ -7,6 +7,7 @@ use alloy::{
     primitives::{keccak256, Address, B256},
     sol_types::{eip712_domain, SolValue},
 };
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 use crate::types::serialize::serialize_decimal;
@@ -40,18 +41,26 @@ pub enum Tif {
 /// Limit order type
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct LimitOrderType {
+pub struct LimitOrder {
     pub tif: Tif,
 }
 
 /// Trigger order type
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TriggerOrderType {
+pub struct TriggerOrder {
     pub is_market: bool,
     pub trigger_px: String,
     /// "tp" | "sl"
-    pub tpsl: String,
+    pub tpsl: Tpsl,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Tpsl {
+    #[serde(rename = "tp")]
+    Tp,
+    #[serde(rename = "sl")]
+    Sl
 }
 
 /// Order type (limit or trigger)
@@ -59,9 +68,9 @@ pub struct TriggerOrderType {
 #[serde(rename_all = "camelCase")]
 pub enum OrderType {
     #[serde(rename = "limit")]
-    Limit(LimitOrderType),
+    Limit(LimitOrder),
     #[serde(rename = "trigger")]
-    Trigger(TriggerOrderType),
+    Trigger(TriggerOrder),
 }
 
 /// Builder fee configuration
@@ -93,6 +102,32 @@ pub struct OrderRequest {
     /// Client order ID (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub c: Option<Cloid>,
+}
+
+impl OrderRequest {
+    /// Create a new market order with automatic price/size rounding
+    pub fn new_market_order(
+        asset_idx: u32,
+        asset_info: &AssetInfo,
+        is_buy: bool,
+        price: Decimal,
+        size: Decimal,
+    ) -> Self {
+        let sz_decimals = asset_info.sz_decimals as u32;
+
+        // BTC and most perps use whole number ticks (0 decimals)
+        let px_decimals = 0;
+
+        Self {
+            a: asset_idx,
+            b: is_buy,
+            p: price.round_dp(px_decimals).to_string(),
+            s: size.round_dp(sz_decimals).to_string(),
+            r: false,
+            t: OrderType::Limit(LimitOrder { tif: Tif::Ioc }),
+            c: None,
+        }
+    }
 }
 
 /// Grouping type for orders

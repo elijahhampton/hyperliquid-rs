@@ -22,11 +22,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .perpetuals_account_summary(&wallet_address.to_string(), None)
         .await?;
 
-    tracing::info!("Perp balance: {} USDC", initial_state.margin_summary.account_value);
+    tracing::info!(
+        "Perp balance: {} USDC",
+        initial_state.margin_summary.account_value
+    );
 
-    let spot_state = info_api
-        .token_balances(&wallet_address.to_string())
-        .await?;
+    let spot_state = info_api.token_balances(&wallet_address.to_string()).await?;
 
     tracing::info!("Spot balances: {:?}", spot_state.balances);
 
@@ -57,11 +58,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .perpetuals_account_summary(&wallet_address.to_string(), None)
         .await?;
 
-    tracing::info!("Perp balance: {} USDC", mid_state.margin_summary.account_value);
+    tracing::info!(
+        "Perp balance: {} USDC",
+        mid_state.margin_summary.account_value
+    );
 
-    let mid_spot_state = info_api
-        .token_balances(&wallet_address.to_string())
-        .await?;
+    let mid_spot_state = info_api.token_balances(&wallet_address.to_string()).await?;
 
     tracing::info!("Spot balances: {:?}", mid_spot_state.balances);
 
@@ -92,15 +94,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .perpetuals_account_summary(&wallet_address.to_string(), None)
         .await?;
 
-    tracing::info!("Perp balance: {} USDC", final_state.margin_summary.account_value);
+    tracing::info!(
+        "Perp balance: {} USDC",
+        final_state.margin_summary.account_value
+    );
 
-    let final_spot_state = info_api
-        .token_balances(&wallet_address.to_string())
-        .await?;
+    let final_spot_state = info_api.token_balances(&wallet_address.to_string()).await?;
 
     tracing::info!("Spot balances: {:?}", final_spot_state.balances);
 
-    tracing::info!("Initial perp: {} → Final perp: {}",
+    tracing::info!(
+        "Initial perp: {} → Final perp: {}",
         initial_state.margin_summary.account_value,
         final_state.margin_summary.account_value
     );

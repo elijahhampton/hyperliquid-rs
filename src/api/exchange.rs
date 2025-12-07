@@ -688,7 +688,7 @@ impl<'client> ExchangeApi<'client> {
             nonce,
         };
 
-     let sig = sign_typed_data(&action, &signer)?;
+        let sig = sign_typed_data(&action, &signer)?;
 
         let signature = Eip712Signature {
             r: format!("0x{:x}", sig.r()),
@@ -734,11 +734,7 @@ impl<'client> ExchangeApi<'client> {
 
         let nonce = current_time_millis();
 
-        let from_sub_account_param = if from_sub_account.is_none() {
-            "".to_string()
-        } else {
-            from_sub_account.unwrap().to_string()
-        };
+        let from_sub_account_param = from_sub_account.map_or_else(String::new, |v| v.to_string());
 
         let action = SendAssetAction {
             type_: "sendAsset".to_string(),

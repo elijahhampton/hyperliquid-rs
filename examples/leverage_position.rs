@@ -69,12 +69,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Place market order using the builder
     tracing::info!("Placing market buy order");
     let order_req = OrderRequest::new_market_order(
-    asset_idx as u32,
-    asset_info,
-    true,
-    order_price_decimal,
-    size
-);
+        asset_idx as u32,
+        asset_info,
+        true,
+        order_price_decimal,
+        size,
+    );
 
     let order_response = exchange_api
         .place_order(order_req, Grouping::Na, None, None, None)

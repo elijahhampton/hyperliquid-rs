@@ -1,5 +1,5 @@
-use crate::{signature::eip712::Eip712, types::info::perpetual::AssetInfo};
 use crate::types::serialize::serialize_chain_id_as_hex;
+use crate::{signature::eip712::Eip712, types::info::perpetual::AssetInfo};
 
 /// Request and response types for the exchange endpoint used to interact
 /// with and trade on the Hyperliquid chain.
@@ -62,7 +62,7 @@ pub enum Tpsl {
     #[serde(rename = "tp")]
     Tp,
     #[serde(rename = "sl")]
-    Sl
+    Sl,
 }
 
 /// Order type (limit or trigger)
@@ -115,7 +115,7 @@ impl OrderRequest {
         price: Decimal,
         size: Decimal,
     ) -> Self {
-        let sz_decimals = asset_info.sz_decimals as u32;
+        let sz_decimals = u32::from(asset_info.sz_decimals);
 
         // BTC and most perps use whole number ticks (0 decimals)
         let px_decimals = 0;

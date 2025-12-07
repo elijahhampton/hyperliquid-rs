@@ -1,6 +1,7 @@
 use hyperliquid_rs::{
     example_helpers::{builder, user},
-    init_tracing::init_tracing, prelude::{current_time_millis, HyperliquidClientBuilder},
+    init_tracing::init_tracing,
+    prelude::{current_time_millis, HyperliquidClientBuilder},
 };
 
 #[tokio::main]

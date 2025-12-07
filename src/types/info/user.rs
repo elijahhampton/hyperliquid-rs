@@ -224,32 +224,32 @@ pub enum OrderId {
 /// Request for request with type "orderStatus"
 #[derive(Debug, Deserialize)]
 pub struct OrderStatusRequest {
-pub user: String,
-/// "orderStatus"
-#[serde(rename = "type")]
-pub type_: String,
-pub oid: OrderId,
+    pub user: String,
+    /// "orderStatus"
+    #[serde(rename = "type")]
+    pub type_: String,
+    pub oid: OrderId,
 }
 #[derive(Debug, Deserialize)]
 pub struct ServerOrder {
-pub order: Order,
-pub status: String,
-#[serde(rename = "statusTimestamp")]
-pub status_timestamp: u64,
+    pub order: Order,
+    pub status: String,
+    #[serde(rename = "statusTimestamp")]
+    pub status_timestamp: u64,
 }
 
 /// Top-level response from the server for an "order" request
 #[derive(Debug, Deserialize)]
 pub struct OrderStatus {
-pub status: String, // e.g., "order"
-pub order: ServerOrder,
+    pub status: String, // e.g., "order"
+    pub order: ServerOrder,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
 pub enum OrderWithStatus {
-Success { order: ServerOrder },
-UnknownOid { status: String },
+    Success { order: Box<ServerOrder> },
+    UnknownOid { status: String },
 }
 /// Represents a Bid or Ask in the [`L2BookSnapshot`].
 #[derive(Debug, Serialize, Deserialize)]
@@ -321,30 +321,30 @@ pub struct Children;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Order {
-pub coin: String,
-pub side: String,
-#[serde(rename = "limitPx")]
-pub limit_px: Decimal,
-pub sz: Decimal,
-pub oid: u64,
-pub timestamp: u64,
-#[serde(rename = "triggerCondition")]
-pub trigger_condition: String,
-#[serde(rename = "isTrigger")]
-pub is_trigger: bool,
-#[serde(rename = "triggerPx")]
-pub trigger_px: Decimal,
-pub children: Vec<Order>,
-#[serde(rename = "isPositionTpsl")]
-pub is_position_tpsl: bool,
-#[serde(rename = "reduceOnly")]
-pub reduce_only: bool,
-#[serde(rename = "orderType")]
-pub order_type: String,
-#[serde(rename = "origSz")]
-pub orig_sz: Decimal,
-pub tif: String,
-pub cloid: Option<String>
+    pub coin: String,
+    pub side: String,
+    #[serde(rename = "limitPx")]
+    pub limit_px: Decimal,
+    pub sz: Decimal,
+    pub oid: u64,
+    pub timestamp: u64,
+    #[serde(rename = "triggerCondition")]
+    pub trigger_condition: String,
+    #[serde(rename = "isTrigger")]
+    pub is_trigger: bool,
+    #[serde(rename = "triggerPx")]
+    pub trigger_px: Decimal,
+    pub children: Vec<Order>,
+    #[serde(rename = "isPositionTpsl")]
+    pub is_position_tpsl: bool,
+    #[serde(rename = "reduceOnly")]
+    pub reduce_only: bool,
+    #[serde(rename = "orderType")]
+    pub order_type: String,
+    #[serde(rename = "origSz")]
+    pub orig_sz: Decimal,
+    pub tif: String,
+    pub cloid: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -419,7 +419,7 @@ pub struct MarginSummary {
 #[serde(rename_all = "camelCase")]
 pub struct AssetPosition {
     #[serde(rename = "type")]
-    pub position_type: String,  // "oneWay"
+    pub position_type: String, // "oneWay"
     pub position: Position,
 }
 
@@ -443,7 +443,7 @@ pub struct Position {
 #[serde(rename_all = "camelCase")]
 pub struct Leverage {
     #[serde(rename = "type")]
-    pub leverage_type: String,  // "isolated" or "cross"
+    pub leverage_type: String, // "isolated" or "cross"
     pub value: u32,
     pub raw_usd: String,
 }

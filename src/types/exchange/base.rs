@@ -38,7 +38,7 @@ impl OrderStatus {
     pub fn error_message(&self) -> Option<&str> {
         match self {
             Self::Error { error } => Some(error),
-            _ => None
+            _ => None,
         }
     }
 }

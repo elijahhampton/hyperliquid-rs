@@ -49,6 +49,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ## Trading
 
 For order placement and cancellation examples, see [`examples/basic_order.rs`](examples/basic_order.rs).
+For account transfer examples, see [`examples/account_transfer.rs`](examples/account_transfer.rs).
+For position leverage and managing an isolated position see [`examples/leverage_position.rs`](examples/leverage_position.rs).
 
 ## Installation
 

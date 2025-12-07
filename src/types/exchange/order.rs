@@ -1,4 +1,6 @@
 use crate::{signature::eip712::Eip712, types::info::perpetual::AssetInfo};
+use crate::types::serialize::serialize_chain_id_as_hex;
+
 /// Request and response types for the exchange endpoint used to interact
 /// with and trade on the Hyperliquid chain.
 ///
@@ -263,6 +265,7 @@ pub struct UsdSendAction {
     pub type_: String,
     /// "Mainnet" | "Testnet"
     pub hyperliquid_chain: String,
+    #[serde(serialize_with = "serialize_chain_id_as_hex")]
     pub signature_chain_id: u64,
     pub destination: String,
     pub amount: String,
@@ -295,6 +298,7 @@ pub struct SpotSendAction {
     pub type_: String,
     /// "Mainnet" | "Testnet"
     pub hyperliquid_chain: String,
+    #[serde(serialize_with = "serialize_chain_id_as_hex")]
     pub signature_chain_id: u64,
     pub destination: String,
     /// e.g. "PURR:0xc4bf3f870c0e9465323c0b6ed28096c2"
@@ -329,6 +333,7 @@ pub struct WithdrawAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
+    #[serde(serialize_with = "serialize_chain_id_as_hex")]
     pub signature_chain_id: u64,
     pub amount: String,
     pub time: u64,
@@ -360,10 +365,28 @@ pub struct UsdClassTransferAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
+    #[serde(serialize_with = "serialize_chain_id_as_hex")]
     pub signature_chain_id: u64,
     pub amount: String,
     pub to_perp: bool,
     pub nonce: u64,
+}
+
+impl Eip712 for UsdClassTransferAction {
+    fn domain(&self) -> Eip712Domain {
+        eip_712_domain(self.signature_chain_id)
+    }
+
+    fn struct_hash(&self) -> B256 {
+        let items = (
+            keccak256("HyperliquidTransaction:UsdClassTransfer(string hyperliquidChain,string amount,bool toPerp,uint64 nonce)"),
+            keccak256(&self.hyperliquid_chain),
+            keccak256(&self.amount),
+            self.to_perp,
+            self.nonce,
+        );
+        keccak256(items.abi_encode())
+    }
 }
 
 /// Request type for POST /exchange with type "sendAsset"
@@ -374,6 +397,7 @@ pub struct SendAssetAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
+    #[serde(serialize_with = "serialize_chain_id_as_hex")]
     pub signature_chain_id: u64,
     pub destination: String,
     pub source_dex: String,
@@ -466,6 +490,7 @@ pub struct ApproveAgentAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
+    #[serde(serialize_with = "serialize_chain_id_as_hex")]
     pub signature_chain_id: u64,
     pub agent_address: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -498,6 +523,7 @@ pub struct ApproveBuilderFeeAction {
     #[serde(rename = "type")]
     pub type_: String,
     pub hyperliquid_chain: String,
+    #[serde(serialize_with = "serialize_chain_id_as_hex")]
     pub signature_chain_id: u64,
     /// e.g. "0.001%"
     pub max_fee_rate: String,

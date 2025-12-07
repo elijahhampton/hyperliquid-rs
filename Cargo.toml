@@ -109,6 +109,9 @@ missing_panics_doc = "allow"
 missing_errors_doc = "allow"
 mod_module_files = "allow"
 
+[[example]]
+name = "account_transfers"
+path = "examples/account_transfers.rs"
 
 [[example]]
 name = "account_status"

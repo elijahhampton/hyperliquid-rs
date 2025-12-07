@@ -688,7 +688,7 @@ impl<'client> ExchangeApi<'client> {
             nonce,
         };
 
-        let sig = sign_l1_action(&signer, &action, None, nonce, None, false)?;
+     let sig = sign_typed_data(&action, &signer)?;
 
         let signature = Eip712Signature {
             r: format!("0x{:x}", sig.r()),

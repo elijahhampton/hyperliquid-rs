@@ -49,7 +49,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ## Trading
 
 For order placement and cancellation examples, see [`examples/basic_order.rs`](examples/basic_order.rs).
+
 For account transfer examples, see [`examples/account_transfer.rs`](examples/account_transfer.rs).
+
 For position leverage and managing an isolated position see [`examples/leverage_position.rs`](examples/leverage_position.rs).
 
 ## Installation
@@ -82,7 +84,7 @@ cargo test --all-features
 # Build documentation
 cargo doc --open
 
-### Getting Help
+## Getting Help
 If you have any questions, first see if the answer to your question can be found in the [Hyperliquid Docs](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api).
 
 If the answer is not there:

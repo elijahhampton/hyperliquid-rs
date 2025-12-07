@@ -81,6 +81,14 @@ cargo test --all-features
 
 # Build documentation
 cargo doc --open
+
+### Getting Help
+If you have any questions, first see if the answer to your question can be found in the [Hyperliquid Docs](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api).
+
+If the answer is not there:
+
+Open a discussion with your question, or
+Open an issue with the bug
 ```
 
 ### Minimum Supported Rust Version (MSRV)

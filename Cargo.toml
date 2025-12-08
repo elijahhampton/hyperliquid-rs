@@ -5,9 +5,10 @@ edition = "2021"
 authors = ["Elijah Hampton <elijahhamptonj@proton.me>"]
 description = "Rust SDK and client for the Hyperliquid exchange API"
 repository = "https://github.com/elijahhampton/hyperliquid-rs"
+homepage = "https://github.com/elijahhampton/hyperliquid-rs"
 readme = "README.md"
-keywords = ["hyperliquid", "crypto", "exchange", "api", "rust", "perp-dex"]
-categories = ["cryptography::cryptocurrencies", "api-bindings"]
+keywords = ["hyperliquid", "exchange", "sdk", "rust", "perp-dex"]
+categories = ["cryptography", "command-line interface", "api-bindings"]
 license = "MIT"
 rust-version = "1.75"
 

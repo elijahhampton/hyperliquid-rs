@@ -59,6 +59,12 @@ For advanced order examples see [`examples/advanced_order.rs`](examples/advanced
 For TWAP order placement see [`examples/twap_order.rs`](examples/twap_order.rs).
 
 
+## Stability and API Guarantees
+This crate is under active development.
+**Breaking changes** may occur between minor versions (0.1 -> 0.2).
+**Public API** is subject to refinement based on usage feedback.
+**Testnet testing** is strongly recommended before mainnet use.
+
 ## Installation
 
 ### As a Library Dependency
@@ -90,7 +96,6 @@ cargo test --all-features
 cargo doc --open
 
 ```
-
 
 ## Getting Help
 If you have any questions, first see if the answer to your question can be found in the [Hyperliquid Docs](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api).

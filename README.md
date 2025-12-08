@@ -54,6 +54,11 @@ For account transfer examples, see [`examples/account_transfer.rs`](examples/acc
 
 For position leverage and managing an isolated position see [`examples/leverage_position.rs`](examples/leverage_position.rs).
 
+For advanced order examples see [`examples/advanced_order.rs`](examples/advanced_order.rs).
+
+For TWAP order placement see [`examples/twap_order.rs`](examples/twap_order.rs).
+
+
 ## Installation
 
 ### As a Library Dependency
@@ -84,6 +89,9 @@ cargo test --all-features
 # Build documentation
 cargo doc --open
 
+```
+
+
 ## Getting Help
 If you have any questions, first see if the answer to your question can be found in the [Hyperliquid Docs](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api).
 
@@ -91,7 +99,7 @@ If the answer is not there:
 
 Open a discussion with your question, or
 Open an issue with the bug
-```
+
 
 ### Minimum Supported Rust Version (MSRV)
 

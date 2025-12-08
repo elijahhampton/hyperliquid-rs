@@ -13,6 +13,8 @@ where
 }
 
 /// Serializes a u64 value representing the chain id to hex form
+#[allow(clippy::trivially_copy_pass_by_ref)] // Given the size of u64 passing by reference will
+                                             // consume the same amount of mem
 pub fn serialize_chain_id_as_hex<S>(chain_id: &u64, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,

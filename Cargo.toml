@@ -149,6 +149,10 @@ path = "examples/order_status_by_oid_or_cloid.rs"
 name = "advanced_order"
 path = "examples/advanced_order.rs"
 
+[[example]]
+name = "twap_order"
+path = "examples/twap_order.rs"
+
 [profile.release]
 codegen-units = 1
 lto = true

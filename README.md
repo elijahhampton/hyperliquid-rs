@@ -1,6 +1,6 @@
 # hyperliquid-rs
 
-An unofficial Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perpetuals decentralized exchange. Built with type safety in mind and async-first architecture.
+A Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perpetuals decentralized exchange. Built with type safety in mind and async-first architecture.
 
 ⚠️ **Please test all desired operations on Testnet before operating on Mainnet**
 

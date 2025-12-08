@@ -58,11 +58,13 @@ For advanced order examples see [`examples/advanced_order.rs`](examples/advanced
 
 For TWAP order placement see [`examples/twap_order.rs`](examples/twap_order.rs).
 
-
 ## Stability and API Guarantees
 This crate is under active development.
+
 **Breaking changes** may occur between minor versions (0.1 -> 0.2).
+
 **Public API** is subject to refinement based on usage feedback.
+
 **Testnet testing** is strongly recommended before mainnet use.
 
 ## Installation

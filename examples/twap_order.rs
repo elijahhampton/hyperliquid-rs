@@ -1,11 +1,8 @@
 #![allow(clippy::all)]
 #![allow(clippy::too_many_lines)]
 use hyperliquid_rs::{
-    example_helpers::load_signer,
-    init_tracing::init_tracing,
-    prelude::{
-        exchange::TwapRequest, response::ResponseInner, HyperliquidClientBuilder, HyperliquidError,
-    },
+    example_helpers::load_signer, init_tracing::init_tracing, response::ResponseInner,
+    types::exchange::TwapRequest, HyperliquidClientBuilder, HyperliquidError,
 };
 use rust_decimal::prelude::*;
 

@@ -1,7 +1,5 @@
 #![allow(clippy::all)]
-use hyperliquid_rs::{
-    example_helpers::user, init_tracing::init_tracing, prelude::HyperliquidClientBuilder,
-};
+use hyperliquid_rs::{example_helpers::user, init_tracing::init_tracing, HyperliquidClientBuilder};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

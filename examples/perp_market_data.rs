@@ -2,11 +2,9 @@
 use hyperliquid_rs::{
     example_helpers::user,
     init_tracing::init_tracing,
-    prelude::{
-        info::{perpetual::PerpetualDex, user::CandleSnapshotRequest},
-        HyperliquidClientBuilder,
-    },
+    types::info::{perpetual::PerpetualDex, user::CandleSnapshotRequest},
     utils::current_time_millis,
+    HyperliquidClientBuilder,
 };
 
 #[tokio::main]

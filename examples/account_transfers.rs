@@ -1,8 +1,7 @@
 #![allow(clippy::all)]
 use hyperliquid_rs::{
-    example_helpers::load_signer,
-    init_tracing::init_tracing,
-    prelude::{response::ResponseInner, HyperliquidClientBuilder},
+    example_helpers::load_signer, init_tracing::init_tracing, response::ResponseInner,
+    HyperliquidClientBuilder,
 };
 
 #[tokio::main]

@@ -4,11 +4,9 @@ use rust_decimal::prelude::*;
 use hyperliquid_rs::{
     example_helpers::load_signer,
     init_tracing::init_tracing,
-    prelude::{
-        exchange::{Grouping, OrderRequest},
-        response::ResponseInner,
-        HyperliquidClientBuilder, HyperliquidError,
-    },
+    response::ResponseInner,
+    types::exchange::{Grouping, OrderRequest},
+    HyperliquidClientBuilder, HyperliquidError,
 };
 
 #[tokio::main]

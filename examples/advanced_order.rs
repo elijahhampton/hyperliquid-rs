@@ -2,12 +2,10 @@
 use hyperliquid_rs::{
     example_helpers::load_signer,
     init_tracing::init_tracing,
-    prelude::{
-        exchange::{order::Tpsl, Grouping, OrderRequest, OrderType, TriggerOrder},
-        response::ResponseInner,
-        HyperliquidClientBuilder, HyperliquidError,
-    },
+    response::ResponseInner,
+    types::exchange::{order::Tpsl, Grouping, OrderRequest, OrderType, TriggerOrder},
     utils::current_time_millis,
+    HyperliquidClientBuilder, HyperliquidError,
 };
 use rust_decimal::prelude::*;
 

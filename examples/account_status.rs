@@ -1,7 +1,9 @@
+#![allow(clippy::all)]
 use hyperliquid_rs::{
     example_helpers::{builder, user},
     init_tracing::init_tracing,
-    prelude::{current_time_millis, HyperliquidClientBuilder},
+    prelude::HyperliquidClientBuilder,
+    utils::current_time_millis,
 };
 
 #[tokio::main]

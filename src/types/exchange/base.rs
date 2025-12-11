@@ -66,7 +66,7 @@ impl CancelStatus {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RunningTwap {
-    pub twap_id: u64,
+    pub twap_id: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -81,7 +81,7 @@ impl TwapOrderStatus {
         matches!(self, Self::Running { .. })
     }
 
-    pub fn twap_id(&self) -> Option<u64> {
+    pub fn twap_id(&self) -> Option<u32> {
         match self {
             Self::Running { running } => Some(running.twap_id),
             Self::Error { .. } => None,

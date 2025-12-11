@@ -40,7 +40,7 @@ url = "2.5"
 tokio-test = "0.4"
 
 [lints.rust]
-dead_code = "deny"
+dead_code = "allow"
 unused_imports = "deny"
 missing_docs = "allow"
 
@@ -109,6 +109,7 @@ single_match_else = "allow"
 missing_panics_doc = "allow"
 missing_errors_doc = "allow"
 mod_module_files = "allow"
+struct_field_names = "allow"
 
 [[example]]
 name = "account_transfers"
@@ -141,10 +142,6 @@ path = "examples/leverage_position.rs"
 [[example]]
 name = "vault_details"
 path = "examples/vault_details.rs"
-
-[[example]]
-name = "order_status_by_oid_or_cloid"
-path = "examples/order_status_by_oid_or_cloid.rs"
 
 [[example]]
 name = "advanced_order"

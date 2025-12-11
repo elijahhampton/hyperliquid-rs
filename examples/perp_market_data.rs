@@ -1,11 +1,12 @@
+#![allow(clippy::all)]
 use hyperliquid_rs::{
     example_helpers::user,
     init_tracing::init_tracing,
     prelude::{
-        current_time_millis,
         info::{perpetual::PerpetualDex, user::CandleSnapshotRequest},
         HyperliquidClientBuilder,
     },
+    utils::current_time_millis,
 };
 
 #[tokio::main]

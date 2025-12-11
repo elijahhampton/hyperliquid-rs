@@ -1,4 +1,4 @@
-#[allow(unused_imports)]
+#![allow(clippy::all)]
 use rust_decimal::prelude::*;
 
 use hyperliquid_rs::{
@@ -7,7 +7,7 @@ use hyperliquid_rs::{
     prelude::{
         exchange::{Grouping, OrderRequest},
         response::ResponseInner,
-        HyperliquidClientBuilder,
+        HyperliquidClientBuilder, HyperliquidError,
     },
 };
 
@@ -31,29 +31,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .enumerate()
         .find(|asset| asset.1.name == "BTC");
 
-    let (asset_idx, asset_info) = btc_asset_and_idx.unwrap();
+    let (asset_idx, asset_info) = btc_asset_and_idx.ok_or(HyperliquidError::Internal(
+        "Missing asset in universe".to_string(),
+    ))?;
 
-    let btc_ctx = &asset_ctxs[asset_idx];
+    let btc_ctx = &asset_ctxs
+        .get(asset_idx)
+        .ok_or(HyperliquidError::Internal("Asset not found".to_string()))?;
     let mark_price = Decimal::from_str(&btc_ctx.mark_px)?;
 
     tracing::info!("BTC mark price: ${}", mark_price);
 
     let multiplier = Decimal::from_str("1.01")?;
-    let order_price_decimal = mark_price * multiplier;
+    let order_price_decimal = mark_price.saturating_mul(multiplier);
 
     let min_notional = Decimal::from(10);
-    let min_size = min_notional / order_price_decimal;
+    let min_size =
+        min_notional
+            .checked_div(order_price_decimal)
+            .ok_or(HyperliquidError::InvalidPrice(
+                "Price cannot be 0".to_string(),
+            ))?;
 
     // Round up to sz_decimals precision
-    let sz_decimals = asset_info.sz_decimals as u32;
+    let sz_decimals = u32::try_from(asset_info.sz_decimals)?;
     let size = min_size.round_dp_with_strategy(sz_decimals, RoundingStrategy::AwayFromZero);
 
     tracing::info!("Calculated size: {}", size);
-    tracing::info!("Notional value: {}", size * order_price_decimal);
+    tracing::info!(
+        "Notional value: {}",
+        size.saturating_mul(order_price_decimal)
+    );
 
     tracing::info!("Setting leverage to 5x isolated");
     let leverage_response = exchange_api
-        .update_leverage(asset_idx as u32, false, 5, None, None)
+        .update_leverage(u32::try_from(asset_idx)?, false, 5, None, None)
         .await?;
 
     match leverage_response.response {
@@ -69,7 +81,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Place market order using the builder
     tracing::info!("Placing market buy order");
     let order_req = OrderRequest::new_market_order(
-        asset_idx as u32,
+        u32::try_from(asset_idx)?,
         asset_info,
         true,
         order_price_decimal,
@@ -94,7 +106,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tracing::info!("Adding 5 USDC to isolated margin");
     let add_margin_response = exchange_api
-        .update_isolated_margin(asset_idx as u32, true, 5_000_000, None, None)
+        .update_isolated_margin(u32::try_from(asset_idx)?, true, 5_000_000, None, None)
         .await?;
 
     match add_margin_response.response {

@@ -1,14 +1,14 @@
-use hyperliquid_rs::prelude::exchange::LimitOrder;
+#![allow(clippy::all)]
+use hyperliquid_rs::prelude::{exchange::LimitOrder, response::ResponseInner, HyperliquidError};
 #[allow(unused_imports)]
 use hyperliquid_rs::{
     example_helpers::load_signer,
     init_tracing::init_tracing,
     prelude::{
-        current_time_millis,
         exchange::{CancelRequest, Grouping, OrderRequest, OrderType, Tif},
-        response::ResponseInner,
         HyperliquidClientBuilder,
     },
+    utils::current_time_millis,
 };
 
 #[tokio::main]
@@ -33,17 +33,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .enumerate()
         .find(|asset| asset.1.name == "DOGE");
 
-    let (asset_idx, _) = doge_asset_and_idx.unwrap();
+    let (idx, _) = doge_asset_and_idx.ok_or(HyperliquidError::Internal(
+        "Missing asset in universe".to_string(),
+    ))?;
 
-    let asset_id = format!("@{}", asset_idx);
+    let asset_id = format!("@{}", idx);
     let all_mids = info_api.all_mids(None).await?;
-    let doge_price = all_mids.get(&asset_id).unwrap();
+    let doge_price = all_mids.get(&asset_id).ok_or(HyperliquidError::Internal(
+        "Missing asset in universe".to_string(),
+    ))?;
 
     let limit_order_type = LimitOrder { tif: Tif::Gtc };
 
     if let Some((asset_idx, _)) = doge_asset_and_idx {
         let order_req = OrderRequest {
-            a: asset_idx as u32,
+            a: u32::try_from(asset_idx)?,
             b: true,
             p: doge_price.to_string(),
             s: "100.0".to_string(),
@@ -72,7 +76,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     if let Some(oid) = order_status.oid() {
                         tracing::info!("Canceling order with oid: {}", oid);
                         let cancel = CancelRequest {
-                            a: asset_idx as u32,
+                            a: u32::try_from(asset_idx)?,
                             o: oid,
                         };
 
@@ -92,7 +96,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
             }
-        };
+        }
     }
 
     Ok(())

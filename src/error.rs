@@ -31,6 +31,8 @@ pub enum HyperliquidError {
     #[error["{0}"]]
     Internal(String),
     #[error["{0}"]]
+    InvalidPrice(String),
+    #[error["{0}"]]
     SignatureFailure(String),
     #[error["{0}"]]
     Wallet(String),

@@ -1,10 +1,8 @@
+use crate::api::request_util::SUPPORTED_INTERVALS;
 use crate::error::HyperliquidError::{self, InvalidRequestParameter};
+use crate::utils::current_time_millis;
 use crate::{
-    api::{
-        current_time_millis,
-        request_util::{err_request_invalid_hyperliquid_address, post_json},
-        SUPPORTED_INTERVALS,
-    },
+    api::request_util::{err_request_invalid_hyperliquid_address, post_json},
     chain::is_valid_hyperliquid_address,
     client::HyperliquidClient,
     error::Result,

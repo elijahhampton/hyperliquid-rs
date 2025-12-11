@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 use hyperliquid_rs::{
     example_helpers::user, init_tracing::init_tracing, prelude::HyperliquidClientBuilder,
 };

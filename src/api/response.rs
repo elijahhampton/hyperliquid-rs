@@ -58,6 +58,9 @@ pub struct TwapCancelResponseData {
 // Order responses
 pub type OrderResponse = Response<ResponseBody<OrderResponseData>>;
 pub type CancelResponse = Response<ResponseBody<CancelResponseData>>;
+
+/// Response type for canceling orders by client order ID.
+/// Currently unused but part of the complete API surface.
 pub type CancelByCloidResponse = CancelResponse;
 pub type ModifyResponse = OrderResponse;
 pub type BatchModifyResponse = OrderResponse;

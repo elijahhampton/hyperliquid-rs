@@ -1,7 +1,7 @@
 #![allow(clippy::all)]
 use rust_decimal::prelude::*;
 
-use hyperliquid_rs::{
+use rhyperliquid::{
     example_helpers::load_signer,
     init_tracing::init_tracing,
     response::ResponseInner,

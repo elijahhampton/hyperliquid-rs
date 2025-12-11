@@ -1,11 +1,11 @@
 [package]
-name = "hyperliquid-rs"
+name = "rhyperliquid"
 version = "0.1.0"
 edition = "2021"
 authors = ["Elijah Hampton <elijahhamptonj@proton.me>"]
 description = "Rust SDK and client for the Hyperliquid exchange API"
-repository = "https://github.com/elijahhampton/hyperliquid-rs"
-homepage = "https://github.com/elijahhampton/hyperliquid-rs"
+repository = "https://github.com/elijahhampton/rhyperliquid"
+homepage = "https://github.com/elijahhampton/rhyperliquid"
 readme = "README.md"
 keywords = ["hyperliquid", "exchange", "sdk", "rust", "perp-dex"]
 categories = ["cryptography", "command-line interface", "api-bindings"]

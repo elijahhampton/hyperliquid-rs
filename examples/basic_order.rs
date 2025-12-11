@@ -1,13 +1,13 @@
 #![allow(clippy::all)]
 #[allow(unused_imports)]
-use hyperliquid_rs::{
+use rhyperliquid::{
     example_helpers::load_signer,
     init_tracing::init_tracing,
     types::exchange::{CancelRequest, Grouping, OrderRequest, OrderType, Tif},
     utils::current_time_millis,
     HyperliquidClientBuilder,
 };
-use hyperliquid_rs::{response::ResponseInner, types::exchange::LimitOrder, HyperliquidError};
+use rhyperliquid::{response::ResponseInner, types::exchange::LimitOrder, HyperliquidError};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

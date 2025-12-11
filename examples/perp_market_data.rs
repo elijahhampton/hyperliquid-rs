@@ -1,5 +1,5 @@
 #![allow(clippy::all)]
-use hyperliquid_rs::{
+use rhyperliquid::{
     example_helpers::user,
     init_tracing::init_tracing,
     types::info::{perpetual::PerpetualDex, user::CandleSnapshotRequest},

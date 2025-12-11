@@ -8,7 +8,7 @@ repository = "https://github.com/elijahhampton/rhyperliquid"
 homepage = "https://github.com/elijahhampton/rhyperliquid"
 readme = "README.md"
 keywords = ["hyperliquid", "exchange", "sdk", "rust", "perp-dex"]
-categories = ["cryptography", "command-line interface", "api-bindings"]
+categories = ["cryptography", "api-bindings"]
 license = "MIT"
 rust-version = "1.75"
 

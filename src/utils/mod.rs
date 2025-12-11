@@ -1,6 +1,6 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-/// Returns the current time in millis
+/// Returns the current time in milliseconds.
 #[allow(clippy::expect_used)]
 pub fn current_time_millis() -> u64 {
     let dur = SystemTime::now()

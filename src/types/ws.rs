@@ -56,20 +56,20 @@ pub struct WsBbo {
 /// WebSocket notification
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Notification {
+pub struct WsNotification {
     pub notification: String,
 }
 
 /// All mid prices
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AllMids {
+pub struct WsAllMids {
     pub mids: HashMap<String, String>,
 }
 
 /// Candlestick data
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Candle {
+pub struct WsCandle {
     /// Open time in milliseconds
     pub t: u64,
     /// Close time in milliseconds
@@ -316,7 +316,7 @@ pub struct WsUserTwapSliceFills {
 /// TWAP state
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TwapState {
+pub struct WsTwapState {
     pub coin: String,
     pub user: String,
     pub side: String,
@@ -332,7 +332,7 @@ pub struct TwapState {
 /// TWAP status with description
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TwapStatusInfo {
+pub struct WsTwapStatusInfo {
     /// "activated" | "terminated" | "finished" | "error"
     pub status: String,
     pub description: String,
@@ -342,8 +342,8 @@ pub struct TwapStatusInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WsTwapHistory {
-    pub state: TwapState,
-    pub status: TwapStatusInfo,
+    pub state: WsTwapState,
+    pub status: WsTwapStatusInfo,
     pub time: u64,
 }
 
@@ -395,7 +395,7 @@ pub struct PerpDexState {
 /// WebSocket web data (`WebData3`)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct WebData3 {
+pub struct WsWebData3 {
     pub user_state: UserState,
     pub perp_dex_states: Vec<PerpDexState>,
 }
@@ -437,7 +437,7 @@ pub struct AssetPosition {
 /// Clearinghouse state
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ClearinghouseState {
+pub struct WsClearinghouseState {
     pub asset_positions: Vec<AssetPosition>,
     pub margin_summary: MarginSummary,
     pub cross_margin_summary: MarginSummary,
@@ -470,10 +470,10 @@ pub struct OpenOrders {
 /// TWAP states for a user
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TwapStates {
+pub struct WsTwapStates {
     pub dex: String,
     pub user: String,
-    pub states: Vec<(u64, TwapState)>,
+    pub states: Vec<(u64, WsTwapState)>,
 }
 
 /// WebSocket user non-funding ledger update
@@ -636,4 +636,32 @@ pub struct WsSpotGenesis {
 #[serde(rename_all = "camelCase")]
 pub struct WsRewardsClaim {
     pub amount: f64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct SubscriptionError {
+    pub data: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct SubscriptionConfirmation {
+    pub method: String,
+    pub subscription: serde_json::Value,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "channel", content = "data", rename_all = "camelCase")]
+pub enum SubscriptionResponse {
+    #[serde(rename = "error")]
+    Error(String),
+
+    SubscriptionResponse(SubscriptionConfirmation),
+
+    AllMids(WsAllMids),
+
+    Notification(WsNotification),
+
+    WebData3(WsWebData3),
+
+    TwapStates()
 }

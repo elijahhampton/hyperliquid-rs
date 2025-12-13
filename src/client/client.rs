@@ -1,7 +1,7 @@
 use crate::{
-    api::{exchange::ExchangeApi, info::InfoApi},
+    api::{exchange::ExchangeApi, info::InfoApi, SubscriptionClient},
     client::HyperliquidClientBuilder,
-    error::Result,
+    error::{HyperliquidError, Result},
     types::chain::NetworkType,
 };
 use alloy::signers::local::PrivateKeySigner;
@@ -18,19 +18,23 @@ pub struct Inner {
     base_url: String,
     wallet: Option<PrivateKeySigner>,
     network: NetworkType,
+    ws_endpoint: Option<String>
 }
 
 impl Inner {
     pub fn new(
         network: NetworkType,
         base_url: String,
+        ws_endpoint: Option<String>,
         wallet: Option<PrivateKeySigner>,
+
     ) -> Result<Self> {
         let http_client = ClientBuilder::new().build()?;
 
         Ok(Self {
             http_client,
             base_url,
+            ws_endpoint,
             wallet,
             network,
         })
@@ -41,9 +45,10 @@ impl HyperliquidClient {
     pub fn new(
         network: NetworkType,
         base_url: String,
+        ws_endpoint: Option<String>,
         wallet: Option<PrivateKeySigner>,
     ) -> Result<Self> {
-        let inner = Arc::new(Inner::new(network, base_url, wallet)?);
+        let inner = Arc::new(Inner::new(network, base_url, ws_endpoint, wallet)?);
 
         Ok(Self { inner })
     }
@@ -74,6 +79,11 @@ impl HyperliquidClient {
 
     pub fn exchange(&self) -> ExchangeApi<'_> {
         ExchangeApi::new(self)
+    }
+
+    pub async fn subscriptions(&self) -> Result<SubscriptionClient<'_>> {
+        let endpoint = self.inner.ws_endpoint.clone().ok_or(HyperliquidError::MissingConfiguration { parameter: "ws_endpoint".to_string() })?;
+        Ok(SubscriptionClient::new(endpoint, self).await?)
     }
 
     pub fn is_mainnet(&self) -> bool {

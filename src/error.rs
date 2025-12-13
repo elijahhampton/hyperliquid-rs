@@ -3,6 +3,12 @@ use std::result::Result as StdResult;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
+pub enum SubscriptionError {
+    #[error("Subscription already exist for method {method}")]
+    SubscriptionExist { method: String }
+}
+
+#[derive(Error, Debug)]
 pub enum HyperliquidError {
     #[error("{0}")]
     NetworkError(#[from] reqwest::Error),
@@ -16,12 +22,18 @@ pub enum HyperliquidError {
         parameter: String,
         reason: String,
     },
+    #[error("{0}")]
+    SubscriptionError(#[from] SubscriptionError),
     #[error("Function requires wallet/signer.")]
     SignerRequired,
     #[error("{0}")]
     AlloySignError(#[from] alloy::signers::Error),
     #[error("{0}")]
     RmpSerde(#[from] rmp_serde::encode::Error),
+    #[error("{0}")]
+    IoError(#[from] std::io::Error),
+    #[error("{0}")]
+    TungsteniteError(#[from] tokio_tungstenite::tungstenite::Error),
     #[error("{0}")]
     SignatureError(#[from] SignatureError),
     #[error("Missing configuration for parameter {parameter}")]

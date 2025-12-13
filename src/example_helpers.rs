@@ -1,15 +1,16 @@
 use alloy::signers::local::PrivateKeySigner;
 
 use crate::client::HyperliquidClient;
-use crate::error::Result;
 use std::env;
 
-pub fn testnet_client() -> Result<HyperliquidClient> {
-    HyperliquidClient::builder().testnet().build()
+pub fn testnet_client() -> Result<HyperliquidClient, Box<dyn std::error::Error>> {
+    let signer = load_signer();
+    Ok(HyperliquidClient::builder().testnet().with_wallet(signer).with_subscriptions().build()?)
 }
 
-pub fn mainnet_client() -> Result<HyperliquidClient> {
-    HyperliquidClient::builder().mainnet().build()
+pub fn mainnet_client() -> Result<HyperliquidClient, Box<dyn std::error::Error>> {
+    let signer = load_signer();
+     Ok(HyperliquidClient::builder().mainnet().with_wallet(signer).with_subscriptions().build()?)
 }
 
 #[allow(clippy::must_use_candidate)]

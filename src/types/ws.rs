@@ -461,7 +461,7 @@ pub struct Order {
 /// Open orders for a user
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OpenOrders {
+pub struct WsOpenOrders {
     pub dex: String,
     pub user: String,
     pub orders: Vec<Order>,
@@ -649,6 +649,12 @@ pub struct SubscriptionConfirmation {
     pub subscription: serde_json::Value,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum WsAssetCtx{
+    Ctx(WsActiveAssetCtx),
+    Data(WsActiveSpotAssetCtx)
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "channel", content = "data", rename_all = "camelCase")]
 pub enum SubscriptionResponse {
@@ -663,5 +669,13 @@ pub enum SubscriptionResponse {
 
     WebData3(WsWebData3),
 
-    TwapStates()
+    TwapStates(WsTwapStates),
+
+    OpenOrders(WsOpenOrders),
+
+    UserEvents(WsUserEvent),
+
+    UserNonFundingLedgerUpdate(WsUserNonFundingLedgerUpdate),
+
+    AssetCtx(WsAssetCtx)
 }

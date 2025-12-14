@@ -61,9 +61,9 @@ impl HyperliquidClientBuilder {
                     NetworkType::Testnet => self.ws_endpoint = Some("wss://api.hyperliquid-testnet.xyz/ws".to_string())
                 }
             }
-            None =>
-             panic!("Builder must first call mainnet() or testnet()")
+            None => self.ws_endpoint = Some("wss://api.hyperliquid-testnet.xyz/ws".to_string())
         }
+
         self
     }
 

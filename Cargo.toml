@@ -89,6 +89,7 @@ must_use_candidate = "allow"
 uninlined_format_args = "allow"
 similar_names = "allow"
 redundant_closure_for_method_calls = "allow"
+inconsistent_struct_constructor = "allow"
 
 pedantic = { level = "warn", priority = -1 }
 restriction = { level = "allow", priority = -1 }

@@ -1,5 +1,5 @@
 use alloy::primitives::SignatureError;
-use std::result::Result as StdResult;
+use std::{result::Result as StdResult, string::FromUtf8Error};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -30,6 +30,8 @@ pub enum HyperliquidError {
     AlloySignError(#[from] alloy::signers::Error),
     #[error("{0}")]
     RmpSerde(#[from] rmp_serde::encode::Error),
+    #[error("{0}")]
+    FromUtf8Error(#[from] FromUtf8Error),
     #[error("{0}")]
     IoError(#[from] std::io::Error),
     #[error("{0}")]

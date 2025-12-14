@@ -83,7 +83,7 @@ impl HyperliquidClient {
 
     pub async fn subscriptions(&self) -> Result<SubscriptionClient<'_>> {
         let endpoint = self.inner.ws_endpoint.clone().ok_or(HyperliquidError::MissingConfiguration { parameter: "ws_endpoint".to_string() })?;
-        Ok(SubscriptionClient::new(endpoint, self).await?)
+        SubscriptionClient::new(endpoint, self).await
     }
 
     pub fn is_mainnet(&self) -> bool {

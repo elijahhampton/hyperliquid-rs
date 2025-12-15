@@ -2,10 +2,14 @@ use alloy::primitives::SignatureError;
 use std::{result::Result as StdResult, string::FromUtf8Error};
 use thiserror::Error;
 
+use crate::types::ws::SubscriptionKey;
+
 #[derive(Error, Debug)]
 pub enum SubscriptionError {
     #[error("Subscription already exist for method {method}")]
     SubscriptionExist { method: String },
+    #[error("Caller not subscribed to the {0} feed.")]
+    MissingSubscription(SubscriptionKey),
 }
 
 #[derive(Error, Debug)]

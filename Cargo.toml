@@ -49,7 +49,7 @@ missing_docs = "allow"
 
 [lints.clippy]
 unwrap_used = "deny"
-expect_used = "deny"
+
 panic = "deny"
 unreachable = "deny"
 arithmetic_side_effects = "deny"
@@ -69,6 +69,7 @@ cast_possible_truncation = "deny"
 cast_precision_loss = "deny"
 as_conversions = "warn"
 
+expect_used = "allow"
 map_unwrap_or = "allow"
 min_ident_chars = "allow"
 question_mark_used = "allow"

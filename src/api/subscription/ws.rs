@@ -1,4 +1,3 @@
-#![allow(dead_code, unused_variables)]
 use crate::api::subscription::sender::StreamSenders;
 use crate::api::SUPPORTED_INTERVALS;
 use crate::client::HyperliquidClient;
@@ -35,19 +34,19 @@ impl Default for SubscriptionConfig {
     }
 }
 
-/// A client providing access to Hyperliquid Subscriptions API.
-pub struct SubscriptionClient<'client> {
+/// A WS client providing access to Hyperliquid Subscriptions API.
+pub struct SubscriptionClient {
     write_stream: SplitSink<
         WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>,
         Message,
     >,
     streams: Arc<RwLock<StreamSenders>>,
-    client: &'client HyperliquidClient,
 }
 
-impl<'client> SubscriptionClient<'client> {
-    pub async fn new(ws_endpoint: String, client: &'client HyperliquidClient) -> Result<Self> {
-        let (ws_stream, _response) = connect_async(&ws_endpoint).await?;
+impl SubscriptionClient {
+    pub async fn new(client: &HyperliquidClient) -> Result<Self> {
+        let endpoint = client.ws_endpoint().ok_or(HyperliquidError::MissingConfiguration { parameter: "ws_endpoint".to_string() })?;
+        let (ws_stream, _response) = connect_async(endpoint).await?;
         let (write_stream, read_stream) = ws_stream.split();
 
         let senders = Arc::new(RwLock::new(StreamSenders::new()));
@@ -57,7 +56,6 @@ impl<'client> SubscriptionClient<'client> {
         Ok(Self {
             write_stream,
             streams: senders,
-            client,
         })
     }
 
@@ -95,7 +93,7 @@ impl<'client> SubscriptionClient<'client> {
                         tracing::error!("{:?}", err);
                     }
                     SubscriptionResponse::AllMids(mids) => {
-                        if let (Some(tx), Some(dex)) = &senders.read().await.all_mids {
+                        if let (Some(tx), Some(_)) = &senders.read().await.all_mids {
                             if let Err(e) = tx.send(mids) {
                                 tracing::error!("{:?}", e);
                             }
@@ -105,6 +103,155 @@ impl<'client> SubscriptionClient<'client> {
                 }
             }
         })
+    }
+
+    pub async fn unsubscribe(&mut self, key: &SubscriptionKey) -> Result<()> {
+        let subscription = {
+            let streams = self.streams.read().await;
+            Self::build_unsubscribe_payload(&streams, key)?
+        };
+
+        let msg = SubscriptionConfirmation {
+            method: "unsubscribe".into(),
+            subscription: serde_json::Value::Object(subscription),
+        };
+
+        self.send_and_flush(msg).await?;
+
+        {
+            let mut streams = self.streams.write().await;
+            Self::clear_subscription(&mut streams, key);
+        }
+
+        Ok(())
+    }
+
+    fn build_unsubscribe_payload(
+        streams: &StreamSenders,
+        key: &SubscriptionKey,
+    ) -> Result<serde_json::Map<String, serde_json::Value>> {
+        use serde_json::{Map, Value};
+
+        let mut sub = Map::new();
+
+        match key {
+            SubscriptionKey::AllMids => {
+                let (_, dex) = &streams.all_mids;
+                Self::ensure_present(&streams.all_mids.0, key)?;
+                sub.insert("type".into(), Value::String("all_mids".into()));
+                if let Some(d) = dex {
+                    sub.insert("dex".into(), Value::String(d.clone()));
+                }
+            }
+
+            SubscriptionKey::Candle => {
+                let (_, coin, interval) = &streams.candle;
+                Self::ensure_present(&streams.candle.0, key)?;
+                sub.insert("type".into(), Value::String("candle".into()));
+                sub.insert("coin".into(), Value::String(Self::req(coin, key)?));
+                sub.insert("interval".into(), Value::String(Self::req(interval, key)?));
+            }
+
+            SubscriptionKey::Trades => {
+                let (_, coin, _, _) = &streams.trades;
+                Self::ensure_present(&streams.trades.0, key)?;
+                sub.insert("coin".into(), Value::String(Self::req(coin, key)?));
+            }
+
+            SubscriptionKey::L2Book => {
+                let (_, coin, _, _) = &streams.l2book;
+                Self::ensure_present(&streams.l2book.0, key)?;
+                sub.insert("coin".into(), Value::String(Self::req(coin, key)?));
+            }
+
+            SubscriptionKey::Notification => {
+                Self::user_only(&mut sub, &streams.notifications, key)?;
+            }
+            SubscriptionKey::WebData3 => Self::user_only(&mut sub, &streams.webdata3, key)?,
+            SubscriptionKey::TwapStates => Self::user_only(&mut sub, &streams.twap_states, key)?,
+            SubscriptionKey::OpenOrders => Self::user_only(&mut sub, &streams.open_orders, key)?,
+            SubscriptionKey::UserEvents => Self::user_only(&mut sub, &streams.user_events, key)?,
+            SubscriptionKey::UserNonFundingLedgerUpdate => {
+                Self::user_only(&mut sub, &streams.user_non_funding_ledger_updates, key)?;
+            }
+
+            SubscriptionKey::ActiveAssetCtx => {
+                let (_, coin) = &streams.active_asset_ctx;
+                Self::ensure_present(&streams.active_asset_ctx.0, key)?;
+                sub.insert("coin".into(), Value::String(Self::req(coin, key)?));
+            }
+
+            SubscriptionKey::ActiveAssetData => {
+                let (_, user, coin) = &streams.active_asset_data;
+                Self::ensure_present(&streams.active_asset_data.0, key)?;
+                sub.insert("user".into(), Value::String(Self::req(user, key)?));
+                sub.insert("coin".into(), Value::String(Self::req(coin, key)?));
+            }
+
+            SubscriptionKey::UserTwapSliceFills => {
+                Self::user_only(&mut sub, &streams.user_twap_slice_fills, key)?;
+            }
+
+            SubscriptionKey::UserTwapHistory => {
+                Self::user_only(&mut sub, &streams.user_twap_history, key)?;
+            }
+
+            SubscriptionKey::Bbo => Self::user_only(&mut sub, &streams.bbo, key)?,
+        }
+
+        Ok(sub)
+    }
+
+    fn ensure_present<T>(sender: Option<&Sender<T>>, key: &SubscriptionKey) -> Result<()> {
+        if sender.is_none() {
+            Err(Self::missing(key))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn req(v: Option<&String>, key: &SubscriptionKey) -> Result<String> {
+        v.clone().ok_or_else(|| Self::missing(key))
+    }
+
+    fn user_only<T>(
+        sub: &mut serde_json::Map<String, serde_json::Value>,
+        entry: &(Option<Sender<T>>, Option<String>),
+        key: &SubscriptionKey,
+    ) -> Result<()> {
+        Self::ensure_present(&entry.0, key)?;
+        sub.insert(
+            "user".into(),
+            serde_json::Value::String(Self::req(&entry.1, key)?),
+        );
+        Ok(())
+    }
+
+    fn missing(key: &SubscriptionKey) -> HyperliquidError {
+        HyperliquidError::SubscriptionError(SubscriptionError::MissingSubscription(key.clone()))
+    }
+    fn clear_subscription(streams: &mut StreamSenders, key: &SubscriptionKey) {
+        match key {
+            SubscriptionKey::AllMids => streams.all_mids = Default::default(),
+            SubscriptionKey::Candle => streams.candle = Default::default(),
+            SubscriptionKey::Trades => streams.trades = Default::default(),
+            SubscriptionKey::L2Book => streams.l2book = Default::default(),
+            SubscriptionKey::Notification => streams.notifications = Default::default(),
+            SubscriptionKey::WebData3 => streams.webdata3 = Default::default(),
+            SubscriptionKey::TwapStates => streams.twap_states = Default::default(),
+            SubscriptionKey::OpenOrders => streams.open_orders = Default::default(),
+            SubscriptionKey::UserEvents => streams.user_events = Default::default(),
+            SubscriptionKey::UserNonFundingLedgerUpdate => {
+                streams.user_non_funding_ledger_updates = Default::default();
+            }
+            SubscriptionKey::ActiveAssetCtx => streams.active_asset_ctx = Default::default(),
+            SubscriptionKey::ActiveAssetData => streams.active_asset_data = Default::default(),
+            SubscriptionKey::UserTwapSliceFills => {
+                streams.user_twap_slice_fills = Default::default();
+            }
+            SubscriptionKey::UserTwapHistory => streams.user_twap_history = Default::default(),
+            SubscriptionKey::Bbo => streams.bbo = Default::default(),
+        }
     }
 
     /// Subscribes to the [`WsAllMids`] websocket feed.
@@ -132,7 +279,7 @@ impl<'client> SubscriptionClient<'client> {
                 if let Some(obj) = dex_obj.as_object_mut() {
                     let val = serde_json::Value::String(dex_param);
 
-                    obj.insert("dex".to_string(), val.clone());
+                    obj.insert("dex".to_string(), val);
                 }
             }
         }
@@ -144,7 +291,6 @@ impl<'client> SubscriptionClient<'client> {
 
         {
             let write_lock = &mut self.streams.write().await.all_mids;
-            //    let (mut opt_tx, mut opt_dex) = write_lock;
 
             if write_lock.0.is_some() {
                 tracing::error!("Already subscribed to `AllMids`");
@@ -200,8 +346,7 @@ impl<'client> SubscriptionClient<'client> {
         let (tx, rx) = Self::subscription_channel::<WsCandle>(Some(capacity));
 
         {
-            let mut streams = self.streams.write().await;
-            let candle = &mut streams.candle;
+            let mut candle = self.streams.write().await.candle;
 
             if candle.0.is_some() {
                 return Err(HyperliquidError::SubscriptionError(
@@ -230,14 +375,27 @@ impl<'client> SubscriptionClient<'client> {
         &mut self,
         subscription_config: Option<SubscriptionConfig>,
         coin: impl Into<String> + Serialize,
+        n_sig_figs: Option<u32>,
+        mantissa: Option<u32>,
     ) -> Result<Receiver<WsBook>> {
-        let subscription_message = SubscriptionConfirmation {
+        let coin = coin.into();
+
+        let mut subscription_message = SubscriptionConfirmation {
             method: "subscribe".to_string(),
             subscription: json!({
                 "type": "l2book",
-                "coin": coin,
+                "coin": coin.clone(),
             }),
         };
+
+        let subscription_data = subscription_message.subscription.as_object_mut().expect("subscription object to be valid");
+        if let Some(sig_figs) = n_sig_figs {
+            subscription_data.insert("nSigFigs".to_string(), serde_json::Value::Number(sig_figs.into()));
+        }
+
+        if let Some(mantissa) = mantissa {
+             subscription_data.insert("mantissa".to_string(), serde_json::Value::Number(mantissa.into()));
+        }
 
         self.send_and_flush(subscription_message).await?;
 
@@ -256,6 +414,9 @@ impl<'client> SubscriptionClient<'client> {
             }
 
             stream_lock.0 = Some(tx);
+            stream_lock.1 = Some(coin);
+            stream_lock.2 = n_sig_figs;
+            stream_lock.3 = mantissa;
         }
 
         Ok(rx)
@@ -430,6 +591,7 @@ impl<'client> SubscriptionClient<'client> {
             }
 
             *opt_tx = Some(tx);
+            *opt_user = Some(user);
         }
 
         Ok(rx)
@@ -557,7 +719,7 @@ impl<'client> SubscriptionClient<'client> {
         let capacity = subscription_config.unwrap_or_default().channel_capacity;
         let (tx, rx) = Self::subscription_channel::<WsUserEvent>(Some(capacity));
 
-        let mut write_lock = &mut self.streams.write().await.user_events;
+        let write_lock = &mut self.streams.write().await.user_events;
         write_lock.0 = Some(tx);
         write_lock.1 = Some(user);
 
@@ -600,7 +762,7 @@ impl<'client> SubscriptionClient<'client> {
         let capacity = subscription_config.unwrap_or_default().channel_capacity;
         let (tx, rx) = Self::subscription_channel::<WsUserFills>(Some(capacity));
 
-        let mut write_lock = &mut self.streams.write().await.user_fills;
+        let write_lock = &mut self.streams.write().await.user_fills;
         write_lock.0 = Some(tx);
         write_lock.1 = Some(user);
 
@@ -892,15 +1054,13 @@ impl<'client> SubscriptionClient<'client> {
         subscription_config: Option<SubscriptionConfig>,
         user: impl Into<String>,
     ) -> Result<Receiver<WsBbo>> {
-        {
-            if self.streams.read().await.bbo.0.is_some() {
-                tracing::error!("Already subscribed to `bbo`");
-                return Err(HyperliquidError::SubscriptionError(
-                    SubscriptionError::SubscriptionExist {
-                        method: "bbo".to_string(),
-                    },
-                ));
-            }
+        if self.streams.read().await.bbo.0.is_some() {
+            tracing::error!("Already subscribed to `bbo`");
+            return Err(HyperliquidError::SubscriptionError(
+                SubscriptionError::SubscriptionExist {
+                    method: "bbo".to_string(),
+                },
+            ));
         }
 
         let user = user.into();
@@ -923,9 +1083,5 @@ impl<'client> SubscriptionClient<'client> {
         write_lock.1 = Some(user);
 
         Ok(rx)
-    }
-
-    pub fn unsubscribe(&self, key: SubscriptionKey) -> Result<()> {
-        Ok(())
     }
 }

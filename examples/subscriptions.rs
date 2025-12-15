@@ -9,11 +9,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subscriptions()
         .await
         .unwrap()
-        .subscribe_all_mids(None)
+        .subscribe_all_mids(None, None)
         .await
         .unwrap();
 
-    while let Some(msg) = rx.recv().await {
+    while let Ok(msg) = rx.recv().await {
         tracing::info!("Received new message from 'allMids' subscription.");
         tracing::info!("{:?}", msg);
     }

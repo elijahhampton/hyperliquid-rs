@@ -90,7 +90,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         t: OrderType::Trigger(TriggerOrder {
             is_market: true,
             trigger_px: take_profit_trigger.clone(),
-            tpsl: Tpsl::Tpt,
+            tpsl: Tpsl::Tp,
         }),
         c: None,
     };

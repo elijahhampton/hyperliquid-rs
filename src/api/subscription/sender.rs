@@ -11,8 +11,13 @@ use tokio::sync::broadcast::Sender;
 pub struct StreamSenders {
     pub(crate) all_mids: (Option<Sender<WsAllMids>>, Option<String>),
     pub(crate) candle: (Option<Sender<WsCandle>>, Option<String>, Option<String>),
-    pub(crate) trades: (Option<Sender<WsTrade>>, Option<String>),
-    pub(crate) l2book: (Option<Sender<WsBook>>, Option<String>),
+    pub(crate) trades: (
+        Option<Sender<WsTrade>>,
+        Option<String>,
+        Option<u32>,
+        Option<u32>,
+    ),
+    pub(crate) l2book: (Option<Sender<WsBook>>, Option<String>, Option<u32>, Option<u32>),
     pub(crate) notifications: (Option<Sender<WsNotification>>, Option<String>),
     pub(crate) webdata3: (Option<Sender<WsWebData3>>, Option<String>),
     pub(crate) twap_states: (Option<Sender<WsTwapStates>>, Option<String>),
@@ -39,8 +44,8 @@ impl StreamSenders {
         Self {
             all_mids: (None, None),
             candle: (None, None, None),
-            trades: (None, None),
-            l2book: (None, None),
+            trades: (None, None, None, None),
+            l2book: (None, None, None, None),
             notifications: (None, None),
             webdata3: (None, None),
             twap_states: (None, None),

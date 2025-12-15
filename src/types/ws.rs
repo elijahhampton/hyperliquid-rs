@@ -1,6 +1,5 @@
-#![allow(dead_code)]
-
-/// Request and response types for WebSocket subscriptions and streaming data.
+/// Request and response types for WebSocket subscriptions
+/// and streaming data.
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -655,7 +654,11 @@ pub enum WsAssetCtx {
     Data(WsActiveSpotAssetCtx),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+/// Identifies a concrete websocket subscription type supported by the feed.
+///
+/// Each variant corresponds to a distinct server-side stream and determines
+/// both the subscription parameters and the shape of messages received.
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum SubscriptionKey {
     AllMids,
     Candle,
@@ -674,41 +677,57 @@ pub enum SubscriptionKey {
     Bbo,
 }
 
+impl std::fmt::Display for SubscriptionKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let _ = match *self {
+            Self::AllMids => f.write_str("allMids"),
+            Self::Candle => f.write_str("candle"),
+            Self::Trades => f.write_str("trades"),
+            Self::L2Book => f.write_str("l2Book"),
+            Self::Notification => f.write_str("notification"),
+            Self::WebData3 => f.write_str("webData3"),
+            Self::TwapStates => f.write_str("twapStates"),
+            Self::OpenOrders => f.write_str("openOrders"),
+            Self::UserEvents => f.write_str("userEvents"),
+            Self::UserNonFundingLedgerUpdate => f.write_str("userNonFundingLedgerUpdate"),
+            Self::ActiveAssetCtx => f.write_str("activeAssetCtx"),
+            Self::ActiveAssetData => f.write_str("activeAssetData"),
+            Self::UserTwapSliceFills => f.write_str("userTwapSliceFills"),
+            Self::UserTwapHistory => f.write_str("userTwapHistory"),
+            Self::Bbo => f.write_str("bbo"),
+        };
+
+        Ok(())
+    }
+}
+
+/// Messages delivered over websocket subscription channels.
+///
+/// The `channel` field selects the subscription stream, while `data` contains
+/// the stream-specific payload deserialized into a strongly typed variant.
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "channel", content = "data", rename_all = "camelCase")]
 pub enum SubscriptionResponse {
+    /// Server-side error emitted over the websocket connection.
     #[serde(rename = "error")]
     Error(String),
 
+    /// Acknowledgement or status response for subscribe / unsubscribe requests.
     SubscriptionResponse(SubscriptionConfirmation),
 
     AllMids(WsAllMids),
-
     Candle(WsCandle),
-
     Trades(WsTrade),
-
     L2Book(WsBook),
-
     Notification(WsNotification),
-
     WebData3(WsWebData3),
-
     TwapStates(WsTwapStates),
-
     OpenOrders(WsOpenOrders),
-
     UserEvents(WsUserEvent),
-
     UserNonFundingLedgerUpdate(WsUserNonFundingLedgerUpdate),
-
     ActiveAssetCtx(WsAssetCtx),
-
     ActiveAssetData(WsActiveAssetData),
-
     UserTwapSliceFills(WsUserTwapSliceFills),
-
     UserTwapHistory(WsUserTwapHistory),
-
     Bbo(WsBbo),
 }

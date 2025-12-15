@@ -1,7 +1,7 @@
 use crate::{
     api::{exchange::ExchangeApi, info::InfoApi, SubscriptionClient},
     client::HyperliquidClientBuilder,
-    error::{HyperliquidError, Result},
+    error::Result,
     types::chain::NetworkType,
 };
 use alloy::signers::local::PrivateKeySigner;
@@ -64,6 +64,10 @@ impl HyperliquidClient {
         &self.inner.base_url
     }
 
+    pub fn ws_endpoint(&self) -> Option<&String> {
+        self.inner.ws_endpoint.as_ref()
+    }
+
     pub fn signer(&self) -> Option<&PrivateKeySigner> {
         self.inner.wallet.as_ref()
     }
@@ -80,15 +84,8 @@ impl HyperliquidClient {
         ExchangeApi::new(self)
     }
 
-    pub async fn subscriptions(&self) -> Result<SubscriptionClient<'_>> {
-        let endpoint =
-            self.inner
-                .ws_endpoint
-                .clone()
-                .ok_or(HyperliquidError::MissingConfiguration {
-                    parameter: "ws_endpoint".to_string(),
-                })?;
-        SubscriptionClient::new(endpoint, self).await
+    pub async fn subscriptions(&self) -> Result<SubscriptionClient> {
+        SubscriptionClient::new(self).await
     }
 
     pub fn is_mainnet(&self) -> bool {

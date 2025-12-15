@@ -5,12 +5,20 @@ use std::env;
 
 pub fn testnet_client() -> Result<HyperliquidClient, Box<dyn std::error::Error>> {
     let signer = load_signer();
-    Ok(HyperliquidClient::builder().testnet().with_wallet(signer).with_subscriptions().build()?)
+    Ok(HyperliquidClient::builder()
+        .testnet()
+        .with_wallet(signer)
+        .with_subscriptions()
+        .build()?)
 }
 
 pub fn mainnet_client() -> Result<HyperliquidClient, Box<dyn std::error::Error>> {
     let signer = load_signer();
-     Ok(HyperliquidClient::builder().mainnet().with_wallet(signer).with_subscriptions().build()?)
+    Ok(HyperliquidClient::builder()
+        .mainnet()
+        .with_wallet(signer)
+        .with_subscriptions()
+        .build()?)
 }
 
 #[allow(clippy::must_use_candidate)]

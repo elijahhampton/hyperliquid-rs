@@ -18,7 +18,7 @@ pub struct Inner {
     base_url: String,
     wallet: Option<PrivateKeySigner>,
     network: NetworkType,
-    ws_endpoint: Option<String>
+    ws_endpoint: Option<String>,
 }
 
 impl Inner {
@@ -27,7 +27,6 @@ impl Inner {
         base_url: String,
         ws_endpoint: Option<String>,
         wallet: Option<PrivateKeySigner>,
-
     ) -> Result<Self> {
         let http_client = ClientBuilder::new().build()?;
 
@@ -82,7 +81,13 @@ impl HyperliquidClient {
     }
 
     pub async fn subscriptions(&self) -> Result<SubscriptionClient<'_>> {
-        let endpoint = self.inner.ws_endpoint.clone().ok_or(HyperliquidError::MissingConfiguration { parameter: "ws_endpoint".to_string() })?;
+        let endpoint =
+            self.inner
+                .ws_endpoint
+                .clone()
+                .ok_or(HyperliquidError::MissingConfiguration {
+                    parameter: "ws_endpoint".to_string(),
+                })?;
         SubscriptionClient::new(endpoint, self).await
     }
 

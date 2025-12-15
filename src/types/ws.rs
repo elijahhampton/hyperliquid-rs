@@ -650,9 +650,28 @@ pub struct SubscriptionConfirmation {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub enum WsAssetCtx{
+pub enum WsAssetCtx {
     Ctx(WsActiveAssetCtx),
-    Data(WsActiveSpotAssetCtx)
+    Data(WsActiveSpotAssetCtx),
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum SubscriptionKey {
+    AllMids,
+    Candle,
+    Trades,
+    L2Book,
+    Notification,
+    WebData3,
+    TwapStates,
+    OpenOrders,
+    UserEvents,
+    UserNonFundingLedgerUpdate,
+    ActiveAssetCtx,
+    ActiveAssetData,
+    UserTwapSliceFills,
+    UserTwapHistory,
+    Bbo,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -664,6 +683,12 @@ pub enum SubscriptionResponse {
     SubscriptionResponse(SubscriptionConfirmation),
 
     AllMids(WsAllMids),
+
+    Candle(WsCandle),
+
+    Trades(WsTrade),
+
+    L2Book(WsBook),
 
     Notification(WsNotification),
 
@@ -677,5 +702,13 @@ pub enum SubscriptionResponse {
 
     UserNonFundingLedgerUpdate(WsUserNonFundingLedgerUpdate),
 
-    AssetCtx(WsAssetCtx)
+    ActiveAssetCtx(WsAssetCtx),
+
+    ActiveAssetData(WsActiveAssetData),
+
+    UserTwapSliceFills(WsUserTwapSliceFills),
+
+    UserTwapHistory(WsUserTwapHistory),
+
+    Bbo(WsBbo),
 }

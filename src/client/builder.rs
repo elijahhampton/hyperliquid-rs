@@ -6,7 +6,7 @@ pub struct HyperliquidClientBuilder {
     base_url: Option<String>,
     network: Option<NetworkType>,
     wallet: Option<PrivateKeySigner>,
-    ws_endpoint: Option<String>
+    ws_endpoint: Option<String>,
 }
 
 impl Default for HyperliquidClientBuilder {
@@ -23,7 +23,7 @@ impl HyperliquidClientBuilder {
             base_url: None,
             network: None,
             wallet: None,
-            ws_endpoint: None
+            ws_endpoint: None,
         }
     }
 
@@ -55,13 +55,15 @@ impl HyperliquidClientBuilder {
 
     pub fn with_subscriptions(&mut self) -> &mut Self {
         match &self.network {
-            Some(network) => {
-                match network {
-                    NetworkType::Mainnet => self.ws_endpoint = Some("wss://api.hyperliquid.xyz/ws".to_string()),
-                    NetworkType::Testnet => self.ws_endpoint = Some("wss://api.hyperliquid-testnet.xyz/ws".to_string())
+            Some(network) => match network {
+                NetworkType::Mainnet => {
+                    self.ws_endpoint = Some("wss://api.hyperliquid.xyz/ws".to_string())
                 }
-            }
-            None => self.ws_endpoint = Some("wss://api.hyperliquid-testnet.xyz/ws".to_string())
+                NetworkType::Testnet => {
+                    self.ws_endpoint = Some("wss://api.hyperliquid-testnet.xyz/ws".to_string())
+                }
+            },
+            None => self.ws_endpoint = Some("wss://api.hyperliquid-testnet.xyz/ws".to_string()),
         }
 
         self
@@ -79,6 +81,11 @@ impl HyperliquidClientBuilder {
         // Default to Testnet
         let network = self.network.clone().unwrap_or(NetworkType::Testnet);
 
-        HyperliquidClient::new(network, base_url, self.ws_endpoint.clone(), self.wallet.clone())
+        HyperliquidClient::new(
+            network,
+            base_url,
+            self.ws_endpoint.clone(),
+            self.wallet.clone(),
+        )
     }
 }

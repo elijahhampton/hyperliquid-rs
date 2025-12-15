@@ -5,7 +5,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum SubscriptionError {
     #[error("Subscription already exist for method {method}")]
-    SubscriptionExist { method: String }
+    SubscriptionExist { method: String },
 }
 
 #[derive(Error, Debug)]

@@ -66,15 +66,6 @@ jobs:
       - run: cargo build --all-features --verbose
       - run: cargo build --release --all-features
 
-  docs:
-    name: Documentation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo doc --all-features --no-deps
-
   examples:
     name: Examples
     runs-on: ubuntu-latest

@@ -1,4 +1,4 @@
 mod sender;
 mod ws;
 
-pub use ws::SubscriptionClient;
+pub use ws::{SubscriptionClient, SubscriptionConfig};

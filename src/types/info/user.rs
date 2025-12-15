@@ -383,7 +383,7 @@ pub struct SliceFill {
 pub struct Twap {
     pub fill: SliceFill,
     #[serde(rename = "twapId")]
-    pub twap_id: usize,
+    pub twap_id: u32,
 }
 
 /// Response for request with type "userTwapSliceFills"

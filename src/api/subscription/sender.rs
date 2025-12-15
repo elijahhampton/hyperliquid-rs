@@ -17,7 +17,12 @@ pub struct StreamSenders {
         Option<u32>,
         Option<u32>,
     ),
-    pub(crate) l2book: (Option<Sender<WsBook>>, Option<String>, Option<u32>, Option<u32>),
+    pub(crate) l2book: (
+        Option<Sender<WsBook>>,
+        Option<String>,
+        Option<u32>,
+        Option<u32>,
+    ),
     pub(crate) notifications: (Option<Sender<WsNotification>>, Option<String>),
     pub(crate) webdata3: (Option<Sender<WsWebData3>>, Option<String>),
     pub(crate) twap_states: (Option<Sender<WsTwapStates>>, Option<String>),

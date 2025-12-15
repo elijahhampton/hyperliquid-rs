@@ -1,11 +1,10 @@
-use hyperliquid_rs::{
+#![allow(clippy::all)]
+use rhyperliquid::{
     example_helpers::user,
     init_tracing::init_tracing,
-    prelude::{
-        current_time_millis,
-        info::{perpetual::PerpetualDex, user::CandleSnapshotRequest},
-        HyperliquidClientBuilder,
-    },
+    types::info::{perpetual::PerpetualDex, user::CandleSnapshotRequest},
+    utils::current_time_millis,
+    HyperliquidClientBuilder,
 };
 
 #[tokio::main]

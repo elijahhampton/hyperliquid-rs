@@ -1,8 +1,8 @@
-#[allow(clippy::all)]
-use hyperliquid_rs::{
-    example_helpers::load_signer,
-    init_tracing::init_tracing,
-    prelude::{exchange::TwapRequest, response::ResponseInner, HyperliquidClientBuilder},
+#![allow(clippy::all)]
+#![allow(clippy::too_many_lines)]
+use rhyperliquid::{
+    example_helpers::load_signer, init_tracing::init_tracing, response::ResponseInner,
+    types::exchange::TwapRequest, HyperliquidClientBuilder, HyperliquidError,
 };
 use rust_decimal::prelude::*;
 
@@ -26,17 +26,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .enumerate()
         .find(|asset| asset.1.name == "DOGE");
 
-    let (asset_idx, asset_info) = doge_asset_and_idx.unwrap();
+    let (asset_idx, asset_info) = doge_asset_and_idx.ok_or(HyperliquidError::Internal(
+        "Missing asset in universe".to_string(),
+    ))?;
     let asset_id = format!("@{}", asset_idx);
 
     // Get current price to calculate size
     let all_mids = info_api.all_mids(None).await?;
-    let doge_price = all_mids.get(&asset_id).unwrap();
+    let default_decimal = Decimal::new(0, 0);
+    let doge_price = all_mids.get(&asset_id).unwrap_or(&default_decimal);
     let price_decimal = Decimal::from_str(&doge_price.to_string())?;
 
     // Calculate size: $50 notional / price
     let notional = Decimal::from(50);
-    let total_size = notional / price_decimal;
+    let total_size = notional
+        .checked_div(price_decimal)
+        .ok_or(HyperliquidError::InvalidPrice(
+            "Price cannot be zero".to_string(),
+        ))?;
     let sz_decimals = u32::from(asset_info.sz_decimals);
     let size_rounded = total_size.round_dp(sz_decimals);
 
@@ -50,7 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Place TWAP order
     let twap_request = TwapRequest {
-        a: asset_idx as u32,
+        a: u32::try_from(asset_idx)?,
         b: true, // buy
         s: size_rounded.to_string(),
         r: false, // not reduce-only
@@ -98,11 +105,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // Filter fills for our TWAP ID
         let our_fills: Vec<_> = slice_fills
             .iter()
-            .filter(|twap| twap.twap_id == twap_id as usize)
+            .filter(|twap| twap.twap_id == twap_id)
             .collect();
 
-        if our_fills.len() > last_fill_count {
-            let new_fills = our_fills.len() - last_fill_count;
+        let fills_len = our_fills.len();
+
+        if fills_len > last_fill_count {
+            let new_fills = fills_len.saturating_sub(last_fill_count);
             tracing::info!(
                 "New slice executed! Total slices: {} (+{})",
                 our_fills.len(),
@@ -124,7 +133,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Cancel the remaining TWAP
     let cancel_response = exchange_api
-        .cancel_twap_order(asset_idx, twap_id as u32, None, None)
+        .cancel_twap_order(asset_idx, twap_id, None, None)
         .await?;
 
     match cancel_response.response {
@@ -146,7 +155,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
     let our_final_fills: Vec<_> = final_fills
         .iter()
-        .filter(|twap| twap.twap_id == twap_id as usize)
+        .filter(|twap| twap.twap_id == twap_id)
         .collect();
 
     tracing::info!("Total slices executed: {}", our_final_fills.len());
@@ -158,7 +167,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .sum();
 
         tracing::info!("Total size filled: {} DOGE", total_executed);
-        tracing::info!("Remaining: {} DOGE", size_rounded - total_executed);
+        tracing::info!(
+            "Remaining: {} DOGE",
+            size_rounded.saturating_sub(total_executed)
+        );
     }
 
     Ok(())

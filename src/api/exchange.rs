@@ -1,20 +1,19 @@
 use crate::api::response::{
     AgentEnableDexAbstractionResponse, ApproveAgentResponse, ApproveBuilderFeeResponse,
-    BatchModifyResponse, CDepositResponse, CWithdrawResponse, DefaultResponse, ModifyResponse,
-    NoopResponse, ScheduleCancelResponse, SendAssetResponse, TokenDelegateResponse,
-    TwapCancelResponse, TwapOrderResponse, UpdateIsolatedMarginResponse, UpdateLeverageResponse,
-    UsdClassTransferResponse, UsdSendResponse, UserDexAbstractionResponse,
+    BatchModifyResponse, CDepositResponse, CWithdrawResponse, CancelResponse, DefaultResponse,
+    ModifyResponse, NoopResponse, OrderResponse, ScheduleCancelResponse, SendAssetResponse,
+    TokenDelegateResponse, TwapCancelResponse, TwapOrderResponse, UpdateIsolatedMarginResponse,
+    UpdateLeverageResponse, UsdClassTransferResponse, UsdSendResponse, UserDexAbstractionResponse,
     ValidatorL1StreamResponse, VaultTransferResponse, WithdrawResponse,
 };
-use crate::api::{current_time_millis, CancelResponse, OrderResponse};
 use crate::error::{HyperliquidError, Result};
-use crate::prelude::sign_typed_data;
-use crate::signature::sign::{sig_v_from_bool, sign_l1_action};
+use crate::signature::sign::{sig_v_from_bool, sign_l1_action, sign_typed_data};
 use crate::types::exchange::{
     Builder, CancelAction, CancelRequest, Grouping, ModifyRequest, NoopAction, OrderRequest,
     TwapRequest,
 };
 use crate::types::signature::Eip712Signature;
+use crate::utils::current_time_millis;
 use crate::{
     api::request_util::post_json,
     client::HyperliquidClient,

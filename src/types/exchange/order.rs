@@ -101,7 +101,7 @@ pub struct OrderRequest {
     pub r: bool,
     /// Order type
     pub t: OrderType,
-    /// Client order ID (optional)
+    /// Client order ID
     #[serde(skip_serializing_if = "Option::is_none")]
     pub c: Option<Cloid>,
 }

@@ -1,5 +1,5 @@
+use crate::api::request_util::SUPPORTED_INTERVALS;
 use crate::api::subscription::sender::StreamSenders;
-use crate::api::SUPPORTED_INTERVALS;
 use crate::client::HyperliquidClient;
 use crate::error::{HyperliquidError, Result, SubscriptionError};
 use crate::types::ws::{
@@ -45,7 +45,11 @@ pub struct SubscriptionClient {
 
 impl SubscriptionClient {
     pub async fn new(client: &HyperliquidClient) -> Result<Self> {
-        let endpoint = client.ws_endpoint().ok_or(HyperliquidError::MissingConfiguration { parameter: "ws_endpoint".to_string() })?;
+        let endpoint = client
+            .ws_endpoint()
+            .ok_or(HyperliquidError::MissingConfiguration {
+                parameter: "ws_endpoint".to_string(),
+            })?;
         let (ws_stream, _response) = connect_async(endpoint).await?;
         let (write_stream, read_stream) = ws_stream.split();
 
@@ -137,7 +141,7 @@ impl SubscriptionClient {
         match key {
             SubscriptionKey::AllMids => {
                 let (_, dex) = &streams.all_mids;
-                Self::ensure_present(&streams.all_mids.0, key)?;
+                Self::ensure_present(streams.all_mids.0.as_ref(), key)?;
                 sub.insert("type".into(), Value::String("all_mids".into()));
                 if let Some(d) = dex {
                     sub.insert("dex".into(), Value::String(d.clone()));
@@ -146,22 +150,25 @@ impl SubscriptionClient {
 
             SubscriptionKey::Candle => {
                 let (_, coin, interval) = &streams.candle;
-                Self::ensure_present(&streams.candle.0, key)?;
+                Self::ensure_present(streams.candle.0.as_ref(), key)?;
                 sub.insert("type".into(), Value::String("candle".into()));
-                sub.insert("coin".into(), Value::String(Self::req(coin, key)?));
-                sub.insert("interval".into(), Value::String(Self::req(interval, key)?));
+                sub.insert("coin".into(), Value::String(Self::req(coin.as_ref(), key)?));
+                sub.insert(
+                    "interval".into(),
+                    Value::String(Self::req(interval.as_ref(), key)?),
+                );
             }
 
             SubscriptionKey::Trades => {
                 let (_, coin, _, _) = &streams.trades;
-                Self::ensure_present(&streams.trades.0, key)?;
-                sub.insert("coin".into(), Value::String(Self::req(coin, key)?));
+                Self::ensure_present(streams.trades.0.as_ref(), key)?;
+                sub.insert("coin".into(), Value::String(Self::req(coin.as_ref(), key)?));
             }
 
             SubscriptionKey::L2Book => {
                 let (_, coin, _, _) = &streams.l2book;
-                Self::ensure_present(&streams.l2book.0, key)?;
-                sub.insert("coin".into(), Value::String(Self::req(coin, key)?));
+                Self::ensure_present(streams.l2book.0.as_ref(), key)?;
+                sub.insert("coin".into(), Value::String(Self::req(coin.as_ref(), key)?));
             }
 
             SubscriptionKey::Notification => {
@@ -177,15 +184,15 @@ impl SubscriptionClient {
 
             SubscriptionKey::ActiveAssetCtx => {
                 let (_, coin) = &streams.active_asset_ctx;
-                Self::ensure_present(&streams.active_asset_ctx.0, key)?;
-                sub.insert("coin".into(), Value::String(Self::req(coin, key)?));
+                Self::ensure_present(streams.active_asset_ctx.0.as_ref(), key)?;
+                sub.insert("coin".into(), Value::String(Self::req(coin.as_ref(), key)?));
             }
 
             SubscriptionKey::ActiveAssetData => {
                 let (_, user, coin) = &streams.active_asset_data;
-                Self::ensure_present(&streams.active_asset_data.0, key)?;
-                sub.insert("user".into(), Value::String(Self::req(user, key)?));
-                sub.insert("coin".into(), Value::String(Self::req(coin, key)?));
+                Self::ensure_present(streams.active_asset_data.0.as_ref(), key)?;
+                sub.insert("user".into(), Value::String(Self::req(user.as_ref(), key)?));
+                sub.insert("coin".into(), Value::String(Self::req(coin.as_ref(), key)?));
             }
 
             SubscriptionKey::UserTwapSliceFills => {
@@ -211,7 +218,7 @@ impl SubscriptionClient {
     }
 
     fn req(v: Option<&String>, key: &SubscriptionKey) -> Result<String> {
-        v.clone().ok_or_else(|| Self::missing(key))
+        v.cloned().ok_or_else(|| Self::missing(key))
     }
 
     fn user_only<T>(
@@ -219,10 +226,10 @@ impl SubscriptionClient {
         entry: &(Option<Sender<T>>, Option<String>),
         key: &SubscriptionKey,
     ) -> Result<()> {
-        Self::ensure_present(&entry.0, key)?;
+        Self::ensure_present(entry.0.as_ref(), key)?;
         sub.insert(
             "user".into(),
-            serde_json::Value::String(Self::req(&entry.1, key)?),
+            serde_json::Value::String(Self::req(entry.1.as_ref(), key)?),
         );
         Ok(())
     }
@@ -346,7 +353,7 @@ impl SubscriptionClient {
         let (tx, rx) = Self::subscription_channel::<WsCandle>(Some(capacity));
 
         {
-            let mut candle = self.streams.write().await.candle;
+            let candle = &mut self.streams.write().await.candle;
 
             if candle.0.is_some() {
                 return Err(HyperliquidError::SubscriptionError(
@@ -388,13 +395,22 @@ impl SubscriptionClient {
             }),
         };
 
-        let subscription_data = subscription_message.subscription.as_object_mut().expect("subscription object to be valid");
+        let subscription_data = subscription_message
+            .subscription
+            .as_object_mut()
+            .expect("subscription object to be valid");
         if let Some(sig_figs) = n_sig_figs {
-            subscription_data.insert("nSigFigs".to_string(), serde_json::Value::Number(sig_figs.into()));
+            subscription_data.insert(
+                "nSigFigs".to_string(),
+                serde_json::Value::Number(sig_figs.into()),
+            );
         }
 
         if let Some(mantissa) = mantissa {
-             subscription_data.insert("mantissa".to_string(), serde_json::Value::Number(mantissa.into()));
+            subscription_data.insert(
+                "mantissa".to_string(),
+                serde_json::Value::Number(mantissa.into()),
+            );
         }
 
         self.send_and_flush(subscription_message).await?;

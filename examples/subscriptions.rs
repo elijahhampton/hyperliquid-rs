@@ -1,21 +1,20 @@
-use hyperliquid_rs::{example_helpers::testnet_client, init_tracing::init_tracing};
+use rhyperliquid::{example_helpers::testnet_client, init_tracing::init_tracing};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     init_tracing();
 
     let client = testnet_client()?;
-    let mut rx = client
+    if let Ok(mut rx) = client
         .subscriptions()
-        .await
-        .unwrap()
+        .await?
         .subscribe_all_mids(None, None)
         .await
-        .unwrap();
-
-    while let Ok(msg) = rx.recv().await {
-        tracing::info!("Received new message from 'allMids' subscription.");
-        tracing::info!("{:?}", msg);
+    {
+        while let Ok(msg) = rx.recv().await {
+            tracing::info!("Received new message from 'allMids' subscription.");
+            tracing::info!("{:?}", msg);
+        }
     }
 
     Ok(())

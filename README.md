@@ -1,6 +1,6 @@
-# hyperliquid-rs
+# rhyperliquid
 
-An unofficial Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perpetuals decentralized exchange. Built with type safety in mind and async-first architecture.
+A Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perpetuals decentralized exchange. Built with type safety in mind and async-first architecture.
 
 ⚠️ **Please test all desired operations on Testnet before operating on Mainnet**
 
@@ -26,7 +26,7 @@ An unofficial Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-perf
 ## Quick Start
 
 ```rust
-use hyperliquid_rs::HyperliquidClient;
+use rhyperliquid::HyperliquidClient;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -75,7 +75,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-hyperliquid-rs = "0.1"
+rhyperliquid = "0.1"
 tokio = { version = "1.41", features = ["full"] }
 ```
 
@@ -85,8 +85,8 @@ Clone and build the repository:
 
 ```bash
 # Clone the repository
-git clone https://github.com/elijahhampton/hyperliquid-rs.git
-cd hyperliquid-rs
+git clone https://github.com/elijahhampton/rhyperliquid.git
+cd rhyperliquid
 
 # Build the library
 cargo build --release

@@ -3,7 +3,6 @@ use crate::error::{HyperliquidError, Result};
 use once_cell::sync::Lazy;
 use serde::de::DeserializeOwned;
 use std::collections::HashSet;
-use std::time::{SystemTime, UNIX_EPOCH};
 use tracing;
 
 /// Supported time intervals for interval based request
@@ -27,18 +26,6 @@ pub(crate) const fn err_request_invalid_hyperliquid_address(
         parameter,
         reason,
     }
-}
-
-/// Returns the current time in millis
-#[allow(clippy::expect_used)]
-pub fn current_time_millis() -> u64 {
-    let dur = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("System time before UNIX epoch!");
-
-    dur.as_secs()
-        .saturating_mul(1_000)
-        .saturating_add(u64::from(dur.subsec_millis()))
 }
 
 /// Sends a POST request with a JSON body to a url.

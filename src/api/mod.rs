@@ -4,6 +4,4 @@ pub mod request_util;
 pub mod response;
 mod subscription;
 
-pub use request_util::{current_time_millis, SUPPORTED_INTERVALS};
-pub use response::{CancelResponse, OrderResponse};
-pub use subscription::SubscriptionClient;
+pub use subscription::{SubscriptionClient, SubscriptionConfig};

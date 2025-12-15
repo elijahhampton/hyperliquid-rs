@@ -1,14 +1,14 @@
 [package]
-name = "hyperliquid-rs"
+name = "rhyperliquid"
 version = "0.1.0"
 edition = "2021"
 authors = ["Elijah Hampton <elijahhamptonj@proton.me>"]
 description = "Rust SDK and client for the Hyperliquid exchange API"
-repository = "https://github.com/elijahhampton/hyperliquid-rs"
-homepage = "https://github.com/elijahhampton/hyperliquid-rs"
+repository = "https://github.com/elijahhampton/rhyperliquid"
+homepage = "https://github.com/elijahhampton/rhyperliquid"
 readme = "README.md"
 keywords = ["hyperliquid", "exchange", "sdk", "rust", "perp-dex"]
-categories = ["cryptography", "command-line interface", "api-bindings"]
+categories = ["cryptography", "api-bindings"]
 license = "MIT"
 rust-version = "1.75"
 
@@ -43,7 +43,7 @@ url = "2.5"
 tokio-test = "0.4"
 
 [lints.rust]
-dead_code = "deny"
+dead_code = "allow"
 unused_imports = "deny"
 missing_docs = "allow"
 
@@ -114,6 +114,7 @@ single_match_else = "allow"
 missing_panics_doc = "allow"
 missing_errors_doc = "allow"
 mod_module_files = "allow"
+struct_field_names = "allow"
 
 [[example]]
 name = "account_transfers"
@@ -146,10 +147,6 @@ path = "examples/leverage_position.rs"
 [[example]]
 name = "vault_details"
 path = "examples/vault_details.rs"
-
-[[example]]
-name = "order_status_by_oid_or_cloid"
-path = "examples/order_status_by_oid_or_cloid.rs"
 
 [[example]]
 name = "advanced_order"

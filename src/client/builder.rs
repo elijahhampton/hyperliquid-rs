@@ -57,10 +57,10 @@ impl HyperliquidClientBuilder {
         match &self.network {
             Some(network) => match network {
                 NetworkType::Mainnet => {
-                    self.ws_endpoint = Some("wss://api.hyperliquid.xyz/ws".to_string())
+                    self.ws_endpoint = Some("wss://api.hyperliquid.xyz/ws".to_string());
                 }
                 NetworkType::Testnet => {
-                    self.ws_endpoint = Some("wss://api.hyperliquid-testnet.xyz/ws".to_string())
+                    self.ws_endpoint = Some("wss://api.hyperliquid-testnet.xyz/ws".to_string());
                 }
             },
             None => self.ws_endpoint = Some("wss://api.hyperliquid-testnet.xyz/ws".to_string()),

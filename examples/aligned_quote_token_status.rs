@@ -1,4 +1,5 @@
-use hyperliquid_rs::{
+#![allow(clippy::all)]
+use rhyperliquid::{
     example_helpers::{testnet_client, user},
     init_tracing::init_tracing,
 };

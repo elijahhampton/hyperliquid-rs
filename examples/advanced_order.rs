@@ -1,12 +1,11 @@
-use hyperliquid_rs::{
+#![allow(clippy::too_many_lines)]
+use rhyperliquid::{
     example_helpers::load_signer,
     init_tracing::init_tracing,
-    prelude::{
-        current_time_millis,
-        exchange::{order::Tpsl, Grouping, OrderRequest, OrderType, TriggerOrder},
-        response::ResponseInner,
-        HyperliquidClientBuilder,
-    },
+    response::ResponseInner,
+    types::exchange::{order::Tpsl, Grouping, OrderRequest, OrderType, TriggerOrder},
+    utils::current_time_millis,
+    HyperliquidClientBuilder, HyperliquidError,
 };
 use rust_decimal::prelude::*;
 
@@ -29,21 +28,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .enumerate()
         .find(|asset| asset.1.name == "DOGE");
 
-    let (asset_idx, _) = doge_asset_and_idx.unwrap();
+    let (asset_idx, _) = doge_asset_and_idx.ok_or(HyperliquidError::Internal(
+        "Missing asset in universe".to_string(),
+    ))?;
     let asset_id = format!("@{}", asset_idx);
 
     // Get current price
     let all_mids = info_api.all_mids(None).await?;
-    let doge_price = all_mids.get(&asset_id).unwrap();
+    let doge_price = all_mids.get(&asset_id).ok_or(HyperliquidError::Internal(
+        "Missing asset in universe".to_string(),
+    ))?;
     let price_decimal = Decimal::from_str(&doge_price.to_string())?;
 
     // Set stop loss 5% below current price
     tracing::info!("\n=== Placing Stop Loss Order ===");
-    let stop_loss_price = price_decimal * Decimal::from_str("0.95")?; // 5% below
+    let stop_loss_price = price_decimal.saturating_mul(Decimal::from_str("0.95")?); // 5% below
     let stop_loss_trigger = stop_loss_price.round_dp(5).to_string();
 
     let stop_loss_order = OrderRequest {
-        a: asset_idx as u32,
+        a: u32::try_from(asset_idx)?,
         b: true,                      // SELL when triggered
         p: stop_loss_trigger.clone(), // Execution price
         s: "10.0".to_string(),
@@ -78,11 +81,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Set take profit 10% above current price
     tracing::info!("\n=== Placing Take Profit Order ===");
-    let take_profit_price = price_decimal * Decimal::from_str("1.10")?; // 10% above
+    let take_profit_price = price_decimal.saturating_mul(Decimal::from_str("1.10")?); // 10% above
     let take_profit_trigger = take_profit_price.round_dp(5).to_string();
 
     let take_profit_order = OrderRequest {
-        a: asset_idx as u32,
+        a: u32::try_from(asset_idx)?,
         b: false, // SELL when triggered
         p: take_profit_trigger.clone(),
         s: "10.0".to_string(),
@@ -115,13 +118,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
 
-    let cancel_time = current_time_millis() + 30_000;
+    let cancel_time = current_time_millis().saturating_add(30_000);
 
     match exchange_api
         .schedule_cancel(Some(cancel_time), None, None)
         .await
     {
         Ok(response) => {
+            tracing::debug!("{:?}", response);
             tracing::info!("Scheduled to cancel all orders at: {}", cancel_time);
             tracing::info!("Orders will auto-cancel in ~30 seconds");
         }

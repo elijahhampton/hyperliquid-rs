@@ -1,8 +1,9 @@
 use alloy::primitives::SignatureError;
-use std::{result::Result as StdResult, string::FromUtf8Error};
+use std::{result::Result as StdResult, string::FromUtf8Error, sync::mpsc::SendError};
 use thiserror::Error;
+use tokio::sync::broadcast::error::RecvError;
 
-use crate::types::ws::SubscriptionKey;
+use crate::{api::StreamMessage, types::ws::SubscriptionKey};
 
 #[derive(Error, Debug)]
 pub enum SubscriptionError {
@@ -31,6 +32,12 @@ pub enum HyperliquidError {
     #[error("Function requires wallet/signer.")]
     SignerRequired,
     #[error("{0}")]
+    SendError(#[from] SendError<StreamMessage>),
+    #[error("{0}")]
+    RecvError(#[from] RecvError),
+    #[error("{0}")]
+    WebSocketError(String),
+    #[error("{0}")]
     AlloySignError(#[from] alloy::signers::Error),
     #[error("{0}")]
     RmpSerde(#[from] rmp_serde::encode::Error),
@@ -56,6 +63,12 @@ pub enum HyperliquidError {
     Wallet(String),
     #[error["{0}"]]
     GenericParse(String),
+}
+
+impl<T> From<tokio::sync::mpsc::error::SendError<T>> for HyperliquidError {
+    fn from(e: tokio::sync::mpsc::error::SendError<T>) -> Self {
+        HyperliquidError::WebSocketError(format!("Channel send failed: {}", e))
+    }
 }
 
 pub type Result<T> = StdResult<T, HyperliquidError>;

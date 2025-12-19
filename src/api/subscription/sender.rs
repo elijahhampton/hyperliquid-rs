@@ -1,6 +1,6 @@
 use crate::types::ws::{
-    WsActiveAssetData, WsAllMids, WsAssetCtx, WsBbo, WsBook, WsCandle, WsClearinghouseState,
-    WsNotification, WsOpenOrders, WsTrade, WsTwapStates, WsUserEvent, WsUserFills, WsUserFunding,
+    WsActiveAssetData, WsAllMids, WsActiveAssetCtx, WsBbo, WsBook, WsCandle, WsClearinghouseState,
+    WsNotification, WsOpenOrders, WsTrade, WsTwapStates, WsUserEvent, WsUserFills, WsUserFundings,
     WsUserNonFundingLedgerUpdate, WsUserTwapHistory, WsUserTwapSliceFills, WsWebData3,
 };
 use tokio::sync::broadcast::Sender;
@@ -30,10 +30,10 @@ pub struct StreamSenders {
     pub(crate) open_orders: (Option<Sender<WsOpenOrders>>, Option<String>),
     pub(crate) user_events: (Option<Sender<WsUserEvent>>, Option<String>),
     pub(crate) user_fills: (Option<Sender<WsUserFills>>, Option<String>),
-    pub(crate) user_funding: (Option<Sender<WsUserFunding>>, Option<String>),
+    pub(crate) user_funding: (Option<Sender<WsUserFundings>>, Option<String>),
     pub(crate) user_non_funding_ledger_updates:
         (Option<Sender<WsUserNonFundingLedgerUpdate>>, Option<String>),
-    pub(crate) active_asset_ctx: (Option<Sender<WsAssetCtx>>, Option<String>),
+    pub(crate) active_asset_ctx: (Option<Sender<WsActiveAssetCtx>>, Option<String>),
     pub(crate) active_asset_data: (
         Option<Sender<WsActiveAssetData>>,
         Option<String>,

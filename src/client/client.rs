@@ -85,7 +85,7 @@ impl HyperliquidClient {
     }
 
     pub async fn subscriptions(&self) -> Result<SubscriptionClient> {
-        SubscriptionClient::new(self).await
+        SubscriptionClient::new(self, None).await
     }
 
     pub fn is_mainnet(&self) -> bool {

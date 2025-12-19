@@ -4,4 +4,4 @@ pub mod request_util;
 pub mod response;
 mod subscription;
 
-pub use subscription::{SubscriptionClient, SubscriptionConfig};
+pub use subscription::{StreamMessage, SubscriptionClient, SubscriptionConfig};

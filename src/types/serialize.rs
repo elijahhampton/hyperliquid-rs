@@ -1,5 +1,5 @@
-use serde::Serializer;
 use crate::api::request_util::normalize_decimal;
+use serde::Serializer;
 
 /// Serializes decimal values represented as strings to a valid format for the Hyperliquid
 /// API

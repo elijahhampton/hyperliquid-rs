@@ -785,6 +785,24 @@ impl std::fmt::Display for SubscriptionKey {
     }
 }
 
+/// Detailed error response from order/cancel operations
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WsErrorResponse {
+    pub error: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub details: Option<String>,
+}
+
+/// Batch operation error (same length as request)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BatchError {
+    #[serde(rename = "type")]
+    pub error_type: String,
+    pub message: String,
+}
+
 /// Messages delivered over websocket subscription channels.
 ///
 /// The `channel` field selects the subscription stream, while `data` contains
@@ -794,7 +812,7 @@ impl std::fmt::Display for SubscriptionKey {
 pub enum SubscriptionResponse {
     /// Server-side error emitted over the websocket connection.
     #[serde(rename = "error")]
-    Error(String),
+    Error(WsErrorResponse),
 
     /// Acknowledgement or status response for subscribe / unsubscribe requests.
     SubscriptionResponse(SubscriptionConfirmation),

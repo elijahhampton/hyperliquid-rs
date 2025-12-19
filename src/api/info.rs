@@ -264,8 +264,8 @@ impl<'client> InfoApi<'client> {
     pub async fn l2_book_snapshot(
         &self,
         coin: &str,
-        n_sig_figs: Option<usize>,
-        mantissa: Option<usize>,
+        n_sig_figs: Option<u8>,
+        mantissa: Option<u8>,
     ) -> Result<L2BookSnapshot> {
         let mut payload = json!({
             "type": "l2Book",

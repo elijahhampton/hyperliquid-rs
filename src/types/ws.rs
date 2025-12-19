@@ -181,7 +181,7 @@ pub struct WsFill {
 pub struct WsUserFundings {
     pub is_snapshot: bool,
     pub user: String,
-    pub fundings: Vec<WsUserFundings>,
+    pub fundings: Vec<Fundings>,
 }
 
 /// WebSocket user funding payment

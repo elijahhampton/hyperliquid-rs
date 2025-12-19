@@ -236,15 +236,15 @@ impl SubscriptionClient {
         let (write_stream_tx, write_stream_rx) =
             tokio::sync::mpsc::unbounded_channel::<StreamMessage>();
 
-        let _ = Self::spawn_write_task(write_stream, write_stream_rx);
-        let _ = Self::spawn_heartbeat(write_stream_tx.clone());
-        let _ = Self::spawn_read_task(tx, read_stream);
+        Self::spawn_write_task(write_stream, write_stream_rx);
+        Self::spawn_heartbeat(write_stream_tx.clone());
+        Self::spawn_read_task(tx, read_stream);
 
         Ok(Self {
             config,
             events: rx,
             active_subs: RwLock::new(HashSet::new()),
-            write_stream_tx: write_stream_tx,
+            write_stream_tx,
         })
     }
 
@@ -332,7 +332,7 @@ impl SubscriptionClient {
         channel::<T>(capacity.unwrap_or(1000))
     }
 
-    async fn send_and_flush(&mut self, confirmation: SubscriptionConfirmation) -> Result<()> {
+    fn send_and_flush(&self, confirmation: SubscriptionConfirmation) -> Result<()> {
         self.write_stream_tx
             .send(StreamMessage::Subscription(confirmation))?;
         Ok(())
@@ -460,8 +460,7 @@ impl SubscriptionClient {
         self.send_and_flush(SubscriptionConfirmation {
             method: "unsubscribe".into(),
             subscription,
-        })
-        .await?;
+        })?;
 
         self.active_subs.write().await.remove(spec);
         Ok(())
@@ -499,7 +498,7 @@ impl SubscriptionClient {
             }
         }
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -544,7 +543,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -585,7 +584,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -616,7 +615,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -645,7 +644,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -674,7 +673,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -703,7 +702,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -732,7 +731,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -762,7 +761,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
         self.active_subs.write().await.insert(spec);
 
         Ok(())
@@ -790,7 +789,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -820,7 +819,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -850,7 +849,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -884,7 +883,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -914,7 +913,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -954,7 +953,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -985,7 +984,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -1016,7 +1015,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 
@@ -1047,7 +1046,7 @@ impl SubscriptionClient {
             subscription,
         };
 
-        self.send_and_flush(subscription_message).await?;
+        self.send_and_flush(subscription_message)?;
 
         self.active_subs.write().await.insert(spec);
 

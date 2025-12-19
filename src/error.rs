@@ -67,7 +67,7 @@ pub enum HyperliquidError {
 
 impl<T> From<tokio::sync::mpsc::error::SendError<T>> for HyperliquidError {
     fn from(e: tokio::sync::mpsc::error::SendError<T>) -> Self {
-        HyperliquidError::WebSocketError(format!("Channel send failed: {}", e))
+        Self::WebSocketError(format!("Channel send failed: {}", e))
     }
 }
 

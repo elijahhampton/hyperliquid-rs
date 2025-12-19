@@ -181,7 +181,7 @@ pub struct WsFill {
 pub struct WsUserFundings {
     pub is_snapshot: bool,
     pub user: String,
-    pub fundings: Vec<WsUserFundings>
+    pub fundings: Vec<WsUserFundings>,
 }
 
 /// WebSocket user funding payment
@@ -262,7 +262,7 @@ pub struct PerpsAssetCtx {
     pub prev_day_px: Decimal,
     #[serde(with = "rust_decimal::serde::str")]
     pub mark_px: Decimal,
-   #[serde(
+    #[serde(
         with = "rust_decimal::serde::str_option",
         skip_serializing_if = "Option::is_none"
     )]
@@ -291,7 +291,6 @@ pub struct SpotAssetCtx {
     pub circulating_supply: Decimal,
 }
 
-
 /// Leverage information
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -303,7 +302,6 @@ pub struct Leverage {
     pub value: u32,
 }
 
-
 /// WebSocket active asset data for a user
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -311,9 +309,9 @@ pub struct WsActiveAssetData {
     pub user: String,
     pub coin: String,
     pub leverage: Leverage,
-        #[serde(with = "decimal_array")]
+    #[serde(with = "decimal_array")]
     pub max_trade_szs: [Decimal; 2],
-        #[serde(with = "decimal_array")]
+    #[serde(with = "decimal_array")]
     pub available_to_trade: [Decimal; 2],
 }
 
@@ -532,7 +530,7 @@ pub struct WsNonFundingLedgerUpdate {
 pub struct WsUserNonFundingLedgerUpdate {
     pub is_snapshot: bool,
     pub user: String,
-    pub non_funding_ledger_updates: Vec<WsNonFundingLedgerUpdate>
+    pub non_funding_ledger_updates: Vec<WsNonFundingLedgerUpdate>,
 }
 
 /// WebSocket ledger update
@@ -735,7 +733,6 @@ pub struct WsActiveSpotAssetCtx {
     pub ctx: SpotAssetCtx,
 }
 
-
 /// Identifies a concrete websocket subscription type supported by the feed.
 ///
 /// Each variant corresponds to a distinct server-side stream and determines
@@ -785,7 +782,7 @@ impl std::fmt::Display for SubscriptionKey {
     }
 }
 
-/// Detailed error response from order/cancel operations
+/// Error response from order/cancel operations
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WsErrorResponse {
@@ -794,7 +791,7 @@ pub struct WsErrorResponse {
     pub details: Option<String>,
 }
 
-/// Batch operation error (same length as request)
+/// Batch operation error
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BatchError {

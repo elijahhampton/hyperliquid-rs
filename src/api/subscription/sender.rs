@@ -1,5 +1,5 @@
 use crate::types::ws::{
-    WsActiveAssetData, WsAllMids, WsActiveAssetCtx, WsBbo, WsBook, WsCandle, WsClearinghouseState,
+    WsActiveAssetCtx, WsActiveAssetData, WsAllMids, WsBbo, WsBook, WsCandle, WsClearinghouseState,
     WsNotification, WsOpenOrders, WsTrade, WsTwapStates, WsUserEvent, WsUserFills, WsUserFundings,
     WsUserNonFundingLedgerUpdate, WsUserTwapHistory, WsUserTwapSliceFills, WsWebData3,
 };

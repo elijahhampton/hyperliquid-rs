@@ -1,4 +1,4 @@
-#![allow(clippy::all)]
+#![allow(clippy::too_many_lines)]
 use rhyperliquid::{
     example_helpers::load_signer,
     init_tracing::init_tracing,

@@ -334,7 +334,7 @@ pub struct Order {
     pub is_trigger: bool,
     #[serde(rename = "triggerPx")]
     pub trigger_px: Decimal,
-    pub children: Vec<Order>,
+    pub children: Vec<Self>,
     #[serde(rename = "isPositionTpsl")]
     pub is_position_tpsl: bool,
     #[serde(rename = "reduceOnly")]

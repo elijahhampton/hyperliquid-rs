@@ -1,8 +1,11 @@
-#![allow(dead_code)]
-
-/// Request and response types for WebSocket subscriptions and streaming data.
+use rust_decimal::Decimal;
+/// Request and response types for WebSocket subscriptions
+/// and streaming data.
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::primitive::str;
+
+use crate::types::serialize::decimal_array;
 
 /// WebSocket trade data
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -56,20 +59,20 @@ pub struct WsBbo {
 /// WebSocket notification
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Notification {
+pub struct WsNotification {
     pub notification: String,
 }
 
 /// All mid prices
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AllMids {
+pub struct WsAllMids {
     pub mids: HashMap<String, String>,
 }
 
 /// Candlestick data
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Candle {
+pub struct WsCandle {
     /// Open time in milliseconds
     pub t: u64,
     /// Close time in milliseconds
@@ -80,15 +83,20 @@ pub struct Candle {
     /// Interval
     pub i: String,
     /// Open price
-    pub o: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub o: Decimal,
     /// Close price
-    pub c: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub c: Decimal,
     /// High price
-    pub h: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub h: Decimal,
     /// Low price
-    pub l: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub l: Decimal,
     /// Volume (base unit)
-    pub v: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub v: Decimal,
     /// Number of trades
     pub n: u64,
 }
@@ -102,7 +110,7 @@ pub enum WsUserEvent {
         fills: Vec<WsFill>,
     },
     Funding {
-        funding: WsUserFunding,
+        funding: WsUserFundings,
     },
     Liquidation {
         liquidation: WsLiquidation,
@@ -128,7 +136,8 @@ pub struct WsUserFills {
 pub struct FillLiquidation {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub liquidated_user: Option<String>,
-    pub mark_px: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub mark_px: Decimal,
     /// "market" | "backstop"
     pub method: String,
 }
@@ -167,10 +176,18 @@ pub struct WsFill {
     pub builder_fee: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WsUserFundings {
+    pub is_snapshot: bool,
+    pub user: String,
+    pub fundings: Vec<Fundings>,
+}
+
 /// WebSocket user funding payment
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct WsUserFunding {
+pub struct Fundings {
     pub time: u64,
     pub coin: String,
     pub usdc: String,
@@ -225,60 +242,61 @@ pub struct WsBasicOrder {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SharedAssetCtx {
-    pub day_ntl_vlm: f64,
-    pub prev_day_px: f64,
-    pub mark_px: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub day_ntl_vlm: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub prev_day_px: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub mark_px: Decimal,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub mid_px: Option<f64>,
+    pub mid_px: Option<Decimal>,
 }
 
 /// Perpetuals asset context
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PerpsAssetCtx {
-    pub day_ntl_vlm: f64,
-    pub prev_day_px: f64,
-    pub mark_px: f64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub mid_px: Option<f64>,
-    pub funding: f64,
-    pub open_interest: f64,
-    pub oracle_px: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub day_ntl_vlm: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub prev_day_px: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub mark_px: Decimal,
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub mid_px: Option<Decimal>,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub funding: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub open_interest: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub oracle_px: Decimal,
 }
 
 /// Spot asset context
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SpotAssetCtx {
-    pub day_ntl_vlm: f64,
-    pub prev_day_px: f64,
-    pub mark_px: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub day_ntl_vlm: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub prev_day_px: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub mark_px: Decimal,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub mid_px: Option<f64>,
-    pub circulating_supply: f64,
-}
-
-/// WebSocket active perpetuals asset context
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct WsActiveAssetCtx {
-    pub coin: String,
-    pub ctx: PerpsAssetCtx,
-}
-
-/// WebSocket active spot asset context
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct WsActiveSpotAssetCtx {
-    pub coin: String,
-    pub ctx: SpotAssetCtx,
+    pub mid_px: Option<Decimal>,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub circulating_supply: Decimal,
 }
 
 /// Leverage information
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Leverage {
-    pub raw_usd: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub raw_usd: Option<String>,
     #[serde(rename = "type")]
     pub leverage_type: String,
     pub value: u32,
@@ -291,8 +309,10 @@ pub struct WsActiveAssetData {
     pub user: String,
     pub coin: String,
     pub leverage: Leverage,
-    pub max_trade_szs: [f64; 2],
-    pub available_to_trade: [f64; 2],
+    #[serde(with = "decimal_array")]
+    pub max_trade_szs: [Decimal; 2],
+    #[serde(with = "decimal_array")]
+    pub available_to_trade: [Decimal; 2],
 }
 
 /// WebSocket TWAP slice fill
@@ -316,13 +336,16 @@ pub struct WsUserTwapSliceFills {
 /// TWAP state
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TwapState {
+pub struct WsTwapState {
     pub coin: String,
     pub user: String,
     pub side: String,
-    pub sz: f64,
-    pub executed_sz: f64,
-    pub executed_ntl: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub sz: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub executed_sz: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub executed_ntl: Decimal,
     pub minutes: u32,
     pub reduce_only: bool,
     pub randomize: bool,
@@ -332,7 +355,7 @@ pub struct TwapState {
 /// TWAP status with description
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TwapStatusInfo {
+pub struct WsTwapStatusInfo {
     /// "activated" | "terminated" | "finished" | "error"
     pub status: String,
     pub description: String,
@@ -342,8 +365,8 @@ pub struct TwapStatusInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WsTwapHistory {
-    pub state: TwapState,
-    pub status: TwapStatusInfo,
+    pub state: WsTwapState,
+    pub status: WsTwapStatusInfo,
     pub time: u64,
 }
 
@@ -364,7 +387,8 @@ pub struct UserState {
     pub agent_address: Option<String>,
     pub agent_valid_until: Option<u64>,
     pub server_time: u64,
-    pub cum_ledger: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub cum_ledger: Decimal,
     pub is_vault: bool,
     pub user: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -385,7 +409,8 @@ pub struct LeadingVault {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PerpDexState {
-    pub total_vault_equity: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub total_vault_equity: Decimal,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub perps_at_open_interest_cap: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -395,7 +420,7 @@ pub struct PerpDexState {
 /// WebSocket web data (`WebData3`)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct WebData3 {
+pub struct WsWebData3 {
     pub user_state: UserState,
     pub perp_dex_states: Vec<PerpDexState>,
 }
@@ -404,10 +429,14 @@ pub struct WebData3 {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarginSummary {
-    pub account_value: f64,
-    pub total_ntl_pos: f64,
-    pub total_raw_usd: f64,
-    pub total_margin_used: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub account_value: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub total_ntl_pos: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub total_raw_usd: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub total_margin_used: Decimal,
 }
 
 /// Position information
@@ -437,12 +466,23 @@ pub struct AssetPosition {
 /// Clearinghouse state
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ClearinghouseState {
+pub struct WsClearinghouseState {
+    pub dex: String,
+    pub user: String,
+    pub clearinghouse_state: ClearinghouseStateData,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClearinghouseStateData {
     pub asset_positions: Vec<AssetPosition>,
     pub margin_summary: MarginSummary,
     pub cross_margin_summary: MarginSummary,
-    pub cross_maintenance_margin_used: f64,
-    pub withdrawable: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub cross_maintenance_margin_used: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub withdrawable: Decimal,
+    pub time: u64,
 }
 
 /// Order information
@@ -461,7 +501,7 @@ pub struct Order {
 /// Open orders for a user
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OpenOrders {
+pub struct WsOpenOrders {
     pub dex: String,
     pub user: String,
     pub orders: Vec<Order>,
@@ -470,19 +510,27 @@ pub struct OpenOrders {
 /// TWAP states for a user
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TwapStates {
+pub struct WsTwapStates {
     pub dex: String,
     pub user: String,
-    pub states: Vec<(u64, TwapState)>,
+    pub states: Vec<(u64, WsTwapState)>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WsNonFundingLedgerUpdate {
+    pub time: u64,
+    pub hash: String,
+    pub delta: WsLedgerUpdate,
 }
 
 /// WebSocket user non-funding ledger update
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WsUserNonFundingLedgerUpdate {
-    pub time: u64,
-    pub hash: String,
-    pub delta: WsLedgerUpdate,
+    pub is_snapshot: bool,
+    pub user: String,
+    pub non_funding_ledger_updates: Vec<WsNonFundingLedgerUpdate>,
 }
 
 /// WebSocket ledger update
@@ -524,33 +572,39 @@ pub enum WsLedgerUpdate {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WsDeposit {
-    pub usdc: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub usdc: Decimal,
 }
 
 /// Withdraw ledger update
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WsWithdraw {
-    pub usdc: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub usdc: Decimal,
     pub nonce: u64,
-    pub fee: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub fee: Decimal,
 }
 
 /// Internal transfer ledger update
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WsInternalTransfer {
-    pub usdc: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub usdc: Decimal,
     pub user: String,
     pub destination: String,
-    pub fee: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub fee: Decimal,
 }
 
 /// Sub-account transfer ledger update
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WsSubAccountTransfer {
-    pub usdc: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub usdc: Decimal,
     pub user: String,
     pub destination: String,
 }
@@ -560,7 +614,8 @@ pub struct WsSubAccountTransfer {
 #[serde(rename_all = "camelCase")]
 pub struct LiquidatedPosition {
     pub coin: String,
-    pub szi: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub szi: Decimal,
 }
 
 /// Liquidation ledger update
@@ -568,7 +623,8 @@ pub struct LiquidatedPosition {
 #[serde(rename_all = "camelCase")]
 pub struct WsLedgerLiquidation {
     /// For isolated positions this is the isolated account value
-    pub account_value: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub account_value: Decimal,
     /// "Cross" | "Isolated"
     pub leverage_type: String,
     pub liquidated_positions: Vec<LiquidatedPosition>,
@@ -579,7 +635,8 @@ pub struct WsLedgerLiquidation {
 #[serde(rename_all = "camelCase")]
 pub struct WsVaultDelta {
     pub vault: String,
-    pub usdc: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub usdc: Decimal,
 }
 
 /// Vault withdrawal ledger update
@@ -588,11 +645,16 @@ pub struct WsVaultDelta {
 pub struct WsVaultWithdrawal {
     pub vault: String,
     pub user: String,
-    pub requested_usd: f64,
-    pub commission: f64,
-    pub closing_cost: f64,
-    pub basis: f64,
-    pub net_withdrawn_usd: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub requested_usd: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub commission: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub closing_cost: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub basis: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub net_withdrawn_usd: Decimal,
 }
 
 /// Vault leader commission ledger update
@@ -600,7 +662,8 @@ pub struct WsVaultWithdrawal {
 #[serde(rename_all = "camelCase")]
 pub struct WsVaultLeaderCommission {
     pub user: String,
-    pub usdc: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub usdc: Decimal,
 }
 
 /// Spot transfer ledger update
@@ -608,18 +671,22 @@ pub struct WsVaultLeaderCommission {
 #[serde(rename_all = "camelCase")]
 pub struct WsSpotTransfer {
     pub token: String,
-    pub amount: f64,
-    pub usdc_value: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub amount: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub usdc_value: Decimal,
     pub user: String,
     pub destination: String,
-    pub fee: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub fee: Decimal,
 }
 
 /// Account class transfer ledger update
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WsAccountClassTransfer {
-    pub usdc: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub usdc: Decimal,
     pub to_perp: bool,
 }
 
@@ -628,12 +695,145 @@ pub struct WsAccountClassTransfer {
 #[serde(rename_all = "camelCase")]
 pub struct WsSpotGenesis {
     pub token: String,
-    pub amount: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub amount: Decimal,
 }
 
 /// Rewards claim ledger update
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WsRewardsClaim {
-    pub amount: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub amount: Decimal,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct SubscriptionError {
+    pub data: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct SubscriptionConfirmation {
+    pub method: String,
+    pub subscription: serde_json::Value,
+}
+
+/// WebSocket active perpetuals asset context
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct WsActiveAssetCtx {
+    pub coin: String,
+    pub ctx: PerpsAssetCtx,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct WsActiveSpotAssetCtx {
+    pub coin: String,
+    pub ctx: SpotAssetCtx,
+}
+
+/// Identifies a concrete websocket subscription type supported by the feed.
+///
+/// Each variant corresponds to a distinct server-side stream and determines
+/// both the subscription parameters and the shape of messages received.
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum SubscriptionKey {
+    AllMids,
+    Candle,
+    Trades,
+    L2Book,
+    Notification,
+    WebData3,
+    TwapStates,
+    OpenOrders,
+    UserEvents,
+    UserNonFundingLedgerUpdate,
+    ActiveAssetCtx,
+    ActiveAssetData,
+    UserTwapSliceFills,
+    UserTwapHistory,
+    Bbo,
+    Ping,
+}
+
+impl std::fmt::Display for SubscriptionKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let _ = match *self {
+            Self::AllMids => f.write_str("allMids"),
+            Self::Candle => f.write_str("candle"),
+            Self::Trades => f.write_str("trades"),
+            Self::L2Book => f.write_str("l2Book"),
+            Self::Notification => f.write_str("notification"),
+            Self::WebData3 => f.write_str("webData3"),
+            Self::TwapStates => f.write_str("twapStates"),
+            Self::OpenOrders => f.write_str("openOrders"),
+            Self::UserEvents => f.write_str("userEvents"),
+            Self::UserNonFundingLedgerUpdate => f.write_str("userNonFundingLedgerUpdate"),
+            Self::ActiveAssetCtx => f.write_str("activeAssetCtx"),
+            Self::ActiveAssetData => f.write_str("activeAssetData"),
+            Self::UserTwapSliceFills => f.write_str("userTwapSliceFills"),
+            Self::UserTwapHistory => f.write_str("userTwapHistory"),
+            Self::Bbo => f.write_str("bbo"),
+            Self::Ping => f.write_str("pong"),
+        };
+
+        Ok(())
+    }
+}
+
+/// Error response from order/cancel operations
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WsErrorResponse {
+    pub error: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub details: Option<String>,
+}
+
+/// Batch operation error
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BatchError {
+    #[serde(rename = "type")]
+    pub error_type: String,
+    pub message: String,
+}
+
+/// Messages delivered over websocket subscription channels.
+///
+/// The `channel` field selects the subscription stream, while `data` contains
+/// the stream-specific payload deserialized into a strongly typed variant.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(tag = "channel", content = "data", rename_all = "camelCase")]
+pub enum SubscriptionResponse {
+    /// Server-side error emitted over the websocket connection.
+    #[serde(rename = "error")]
+    Error(WsErrorResponse),
+
+    /// Acknowledgement or status response for subscribe / unsubscribe requests.
+    SubscriptionResponse(SubscriptionConfirmation),
+
+    /// Pong response to client ping (keepalive)
+    #[serde(rename = "pong")]
+    Pong,
+
+    AllMids(WsAllMids),
+    Candle(WsCandle),
+    Trades(Vec<WsTrade>),
+    L2Book(WsBook),
+    Notification(WsNotification),
+    WebData3(WsWebData3),
+    ClearinghouseState(WsClearinghouseState),
+    TwapStates(WsTwapStates),
+    UserFills(WsUserFills),
+    OpenOrders(WsOpenOrders),
+    UserEvents(WsUserEvent),
+    UserFundings(WsUserFundings),
+    UserNonFundingLedgerUpdates(WsUserNonFundingLedgerUpdate),
+    ActiveAssetCtx(WsActiveAssetCtx),
+    ActiveAssetData(WsActiveAssetData),
+    UserTwapSliceFills(WsUserTwapSliceFills),
+    UserTwapHistory(WsUserTwapHistory),
+    Bbo(WsBbo),
 }

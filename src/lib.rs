@@ -4,7 +4,7 @@ mod client;
 mod error;
 mod signature;
 
-pub use crate::api::response;
+pub use crate::api::{response, SubscriptionClient, SubscriptionConfig};
 pub use crate::client::{HyperliquidClient, HyperliquidClientBuilder};
 pub use crate::error::{HyperliquidError, Result};
 /// Utilities for examples and testing.

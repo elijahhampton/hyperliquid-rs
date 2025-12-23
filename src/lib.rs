@@ -17,3 +17,6 @@ pub mod example_helpers;
 pub mod init_tracing;
 pub mod types;
 pub mod utils;
+
+#[cfg(feature = "tui")]
+pub mod tui;

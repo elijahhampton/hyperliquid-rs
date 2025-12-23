@@ -12,6 +12,10 @@ categories = ["cryptography", "api-bindings"]
 license = "MIT"
 rust-version = "1.75"
 
+[features]
+default = []
+cli = []
+
 [badges]
 maintenance = { status = "actively-developed" }
 

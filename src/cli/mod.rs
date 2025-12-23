@@ -1,6 +1,5 @@
 use clap::{Parser, Subcommand};
 
-
 #[derive(Subcommand)]
 pub enum Commands {
     AllMids {
@@ -98,7 +97,6 @@ pub enum Commands {
         user: String,
     },
 }
-
 
 #[derive(Parser)]
 pub struct Cli {

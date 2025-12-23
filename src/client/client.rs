@@ -1,5 +1,5 @@
 use crate::{
-    api::{exchange::ExchangeApi, info::InfoApi},
+    api::{exchange::ExchangeApi, info::InfoApi, SubscriptionClient},
     client::HyperliquidClientBuilder,
     error::Result,
     types::chain::NetworkType,
@@ -18,12 +18,14 @@ pub struct Inner {
     base_url: String,
     wallet: Option<PrivateKeySigner>,
     network: NetworkType,
+    ws_endpoint: Option<String>,
 }
 
 impl Inner {
     pub fn new(
         network: NetworkType,
         base_url: String,
+        ws_endpoint: Option<String>,
         wallet: Option<PrivateKeySigner>,
     ) -> Result<Self> {
         let http_client = ClientBuilder::new().build()?;
@@ -31,6 +33,7 @@ impl Inner {
         Ok(Self {
             http_client,
             base_url,
+            ws_endpoint,
             wallet,
             network,
         })
@@ -41,9 +44,10 @@ impl HyperliquidClient {
     pub fn new(
         network: NetworkType,
         base_url: String,
+        ws_endpoint: Option<String>,
         wallet: Option<PrivateKeySigner>,
     ) -> Result<Self> {
-        let inner = Arc::new(Inner::new(network, base_url, wallet)?);
+        let inner = Arc::new(Inner::new(network, base_url, ws_endpoint, wallet)?);
 
         Ok(Self { inner })
     }
@@ -60,6 +64,10 @@ impl HyperliquidClient {
         &self.inner.base_url
     }
 
+    pub fn ws_endpoint(&self) -> Option<&String> {
+        self.inner.ws_endpoint.as_ref()
+    }
+
     pub fn signer(&self) -> Option<&PrivateKeySigner> {
         self.inner.wallet.as_ref()
     }
@@ -74,6 +82,10 @@ impl HyperliquidClient {
 
     pub fn exchange(&self) -> ExchangeApi<'_> {
         ExchangeApi::new(self)
+    }
+
+    pub async fn subscriptions(&self) -> Result<SubscriptionClient> {
+        SubscriptionClient::new(self, None).await
     }
 
     pub fn is_mainnet(&self) -> bool {

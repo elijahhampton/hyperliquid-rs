@@ -20,7 +20,7 @@ A Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perp
 - [x] Complete REST Info API (market data)
 - [x] EIP-712 authentication & message signing
 - [x] Exchange API (order placement, cancellation)
-- [ ] WebSocket streaming (real-time data feeds)
+- [X] WebSocket streaming (real-time data feeds)
 - [ ] CLI
 
 ## Quick Start

@@ -3294,7 +3294,7 @@ dependencies = [
 
 [[package]]
 name = "rhyperliquid"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "alloy",
  "alloy-primitives 0.8.26",

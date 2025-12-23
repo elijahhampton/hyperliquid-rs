@@ -1,4 +1,6 @@
-## [0.2.0] - 2025-12-13
+# Changelog
+
+## [0.2.0] - 2025-12-XX
 
 ### Added
 - WebSocket streaming support for real-time market data

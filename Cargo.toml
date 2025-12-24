@@ -1,6 +1,6 @@
 [package]
 name = "rhyperliquid"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Elijah Hampton <elijahhamptonj@proton.me>"]
 description = "Rust SDK and client for the Hyperliquid exchange API"
@@ -11,6 +11,10 @@ keywords = ["hyperliquid", "exchange", "sdk", "rust", "perp-dex"]
 categories = ["cryptography", "api-bindings"]
 license = "MIT"
 rust-version = "1.75"
+
+[features]
+default = []
+cli = []
 
 [badges]
 maintenance = { status = "actively-developed" }
@@ -24,6 +28,7 @@ alloy = { version = "1", features = ["full"] }
 alloy-primitives = { version = "0.8.0", features = ["serde"] }
 anyhow = "1.0"
 async-trait = "0.1"
+clap = { version = "4.5.53", features = ["derive"] }
 futures = "0.3.31"
 futures-util = { version = "0.3.31", features = ["sink"] }
 once_cell = "1.19"

@@ -94,7 +94,7 @@ impl<'client> ExchangeApi<'client> {
         order: OrderRequest,
         grouping: Grouping,
         builder: Option<Builder>,
-        vault_address: Option<Address>,
+        vault_address: Option<String>,
         expires_after: Option<u64>,
     ) -> Result<OrderResponse> {
         self.bulk_orders(vec![order], grouping, builder, vault_address, expires_after)
@@ -113,7 +113,7 @@ impl<'client> ExchangeApi<'client> {
         orders: Vec<OrderRequest>,
         grouping: Grouping,
         builder: Option<Builder>,
-        vault_address: Option<Address>,
+        vault_address: Option<String>,
         expires_after: Option<u64>,
     ) -> Result<OrderResponse> {
         let signer = self
@@ -130,7 +130,7 @@ impl<'client> ExchangeApi<'client> {
             builder,
         };
 
-        let sig = sign_l1_action(&signer, &action, vault_address, nonce, expires_after, false)?;
+        let sig = sign_l1_action(&signer, &action, vault_address.clone(), nonce, expires_after, false)?;
 
         let signature = Eip712Signature {
             r: format!("0x{:x}", sig.r()),
@@ -171,7 +171,7 @@ impl<'client> ExchangeApi<'client> {
     pub async fn cancel_order(
         &self,
         cancel: CancelRequest,
-        vault_address: Option<Address>,
+        vault_address: Option<String>,
         expires_after: Option<u64>,
     ) -> Result<CancelResponse> {
         self.bulk_cancel_orders(vec![cancel], vault_address, expires_after)
@@ -188,7 +188,7 @@ impl<'client> ExchangeApi<'client> {
     pub async fn bulk_cancel_orders(
         &self,
         cancels: Vec<CancelRequest>,
-        vault_address: Option<Address>,
+        vault_address: Option<String>,
         expires_after: Option<u64>,
     ) -> Result<CancelResponse> {
         let signer = self
@@ -203,7 +203,7 @@ impl<'client> ExchangeApi<'client> {
 
         let nonce = current_time_millis();
 
-        let sig = sign_l1_action(&signer, &action, vault_address, nonce, expires_after, false)?;
+        let sig = sign_l1_action(&signer, &action, vault_address.clone(), nonce, expires_after, false)?;
 
         let signature = Eip712Signature {
             r: format!("0x{:x}", sig.r()),
@@ -247,7 +247,7 @@ impl<'client> ExchangeApi<'client> {
     pub async fn schedule_cancel(
         &self,
         time: Option<u64>,
-        vault_address: Option<Address>,
+        vault_address: Option<String>,
         expires_after: Option<u64>,
     ) -> Result<ScheduleCancelResponse> {
         let signer = self
@@ -265,7 +265,7 @@ impl<'client> ExchangeApi<'client> {
         let sig = sign_l1_action(
             &signer,
             &action,
-            vault_address,
+            vault_address.clone(),
             nonce,
             expires_after,
             self.client.is_mainnet(),
@@ -311,7 +311,7 @@ impl<'client> ExchangeApi<'client> {
     pub async fn modify_an_order(
         &self,
         request: ModifyRequest,
-        vault_address: Option<Address>,
+        vault_address: Option<String>,
         expires_after: Option<u64>,
     ) -> Result<ModifyResponse> {
         let signer = self
@@ -330,7 +330,7 @@ impl<'client> ExchangeApi<'client> {
         let sig = sign_l1_action(
             &signer,
             &action,
-            vault_address,
+            vault_address.clone(),
             nonce,
             expires_after,
             self.client.is_mainnet(),
@@ -375,7 +375,7 @@ impl<'client> ExchangeApi<'client> {
     pub async fn modify_multiple_orders(
         &self,
         requests: Vec<ModifyRequest>,
-        vault_address: Option<Address>,
+        vault_address: Option<String>,
         expires_after: Option<u64>,
     ) -> Result<BatchModifyResponse> {
         let signer = self
@@ -393,7 +393,7 @@ impl<'client> ExchangeApi<'client> {
         let sig = sign_l1_action(
             &signer,
             &action,
-            vault_address,
+            vault_address.clone(),
             nonce,
             expires_after,
             self.client.is_mainnet(),
@@ -442,7 +442,7 @@ impl<'client> ExchangeApi<'client> {
         asset: u32,
         is_buy: bool,
         ntli: u32,
-        vault_address: Option<Address>,
+        vault_address: Option<String>,
         expires_after: Option<u64>,
     ) -> Result<UpdateIsolatedMarginResponse> {
         let signer = self
@@ -462,7 +462,7 @@ impl<'client> ExchangeApi<'client> {
         let sig = sign_l1_action(
             &signer,
             &action,
-            vault_address,
+            vault_address.clone(),
             nonce,
             expires_after,
             self.client.is_mainnet(),
@@ -511,7 +511,7 @@ impl<'client> ExchangeApi<'client> {
         asset: u32,
         is_cross: bool,
         leverage: u32,
-        vault_address: Option<Address>,
+        vault_address: Option<String>,
         expires_after: Option<u64>,
     ) -> Result<UpdateLeverageResponse> {
         let signer = self
@@ -531,7 +531,7 @@ impl<'client> ExchangeApi<'client> {
         let sig = sign_l1_action(
             &signer,
             &action,
-            vault_address,
+            vault_address.clone(),
             nonce,
             expires_after,
             self.client.is_mainnet(),
@@ -724,7 +724,7 @@ impl<'client> ExchangeApi<'client> {
         destination_dex: Address,
         token: String,
         amount: String,
-        from_sub_account: Option<Address>,
+        from_sub_account: Option<String>,
     ) -> Result<SendAssetResponse> {
         let signer = self
             .client
@@ -904,7 +904,7 @@ impl<'client> ExchangeApi<'client> {
     /// * `expires_after` - Optional expiration timestamp in milliseconds
     pub async fn deposit_or_withdraw_from_a_vault(
         &self,
-        vault_address: Address,
+        vault_address: String,
         is_deposit: bool,
         usd_amount: u64,
         expires_after: Option<u64>,
@@ -1064,7 +1064,7 @@ impl<'client> ExchangeApi<'client> {
     pub async fn place_twap_order(
         &self,
         request: TwapRequest,
-        vault_address: Option<Address>,
+        vault_address: Option<String>,
         expires_after: Option<u64>,
     ) -> Result<TwapOrderResponse> {
         let signer = self
@@ -1082,7 +1082,7 @@ impl<'client> ExchangeApi<'client> {
         let sig = sign_l1_action(
             &signer,
             &action,
-            vault_address,
+            vault_address.clone(),
             nonce,
             expires_after,
             self.client.is_mainnet(),
@@ -1129,7 +1129,7 @@ impl<'client> ExchangeApi<'client> {
         &self,
         asset: usize,
         twap_id: u32,
-        vault_address: Option<Address>,
+        vault_address: Option<String>,
         expires_after: Option<u64>,
     ) -> Result<TwapCancelResponse> {
         let signer = self
@@ -1148,7 +1148,7 @@ impl<'client> ExchangeApi<'client> {
         let sig = sign_l1_action(
             &signer,
             &action,
-            vault_address,
+            vault_address.clone(),
             nonce,
             expires_after,
             self.client.is_mainnet(),

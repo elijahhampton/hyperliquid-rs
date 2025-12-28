@@ -45,7 +45,7 @@ where
 pub fn sign_l1_action(
     wallet: &PrivateKeySigner,
     action: &impl Serialize,
-    vault_address: Option<Address>,
+    vault_address: Option<String>,
     nonce: u64,
     expires_after: Option<u64>,
     is_mainnet: bool,
@@ -114,7 +114,7 @@ pub fn sign_l1_action(
 /// Returns the resulting `B256` hash.
 fn action_hash(
     action: &impl Serialize,
-    vault_address: Option<Address>,
+    vault_address: Option<String>,
     nonce: u64,
     expires_after: Option<u64>,
 ) -> Result<B256> {
@@ -124,7 +124,7 @@ fn action_hash(
 
     if let Some(addr) = vault_address {
         data.push(0x01);
-        data.extend_from_slice(addr.as_slice());
+        data.extend_from_slice(addr.as_bytes());
     } else {
         data.push(0x00);
     }

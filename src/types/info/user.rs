@@ -254,17 +254,17 @@ pub enum OrderWithStatus {
 /// Represents a Bid or Ask in the [`L2BookSnapshot`].
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BidOrAsk {
-    px: rust_decimal::Decimal,
-    sz: rust_decimal::Decimal,
-    n: u64,
+    pub px: rust_decimal::Decimal,
+    pub sz: rust_decimal::Decimal,
+    pub n: u64,
 }
 
 /// Response for request with type "l2Book"
 #[derive(Debug, Serialize, Deserialize)]
 pub struct L2BookSnapshot {
-    coin: String,
-    time: u64,
-    levels: (Vec<BidOrAsk>, Vec<BidOrAsk>),
+    pub coin: String,
+    pub time: u64,
+    pub levels: (Vec<BidOrAsk>, Vec<BidOrAsk>),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -280,16 +280,16 @@ pub struct CandleSnapshotRequest {
 #[allow(nonstandard_style)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Candle {
-    T: u64,
-    c: String,
-    h: String,
-    i: String,
-    l: String,
-    n: u64,
-    o: String,
-    s: String,
-    t: u64,
-    v: String,
+    pub T: u64,
+    pub c: String,
+    pub h: String,
+    pub i: String,
+    pub l: String,
+    pub n: u64,
+    pub o: String,
+    pub s: String,
+    pub t: u64,
+    pub v: String,
 }
 
 pub type CandleSnapshot = Vec<Candle>;

@@ -1,9 +1,15 @@
 use clap::{Parser, Subcommand};
+#[allow(unused_imports)]
+use crate::types::exchange::OrderRequest;
 
 #[derive(Subcommand)]
 pub enum Commands {
     AllMids {
         #[arg(short, long)]
+        dex: Option<String>,
+    },
+    SubscribeAllMids {
+        #[arg(long)]
         dex: Option<String>,
     },
     OpenOrders {
@@ -52,6 +58,14 @@ pub enum Commands {
         #[arg(short, long)]
         mantissa: Option<u8>,
     },
+    SubscribeL2Book {
+        #[arg(short, long)]
+        coin: String,
+        #[arg(short, long)]
+        n_sig_figs: Option<u8>,
+        #[arg(short, long)]
+        mantissa: Option<u8>,
+    },
     CandleSnapshot {
         #[arg(short, long)]
         coin: String,
@@ -61,6 +75,12 @@ pub enum Commands {
         start_time: u64,
         #[arg(short, long)]
         end_time: u64,
+    },
+    SubscribeCandleSnapshot {
+        #[arg(short, long)]
+        coin: String,
+        #[arg(short, long)]
+        interval: String,
     },
     HistoricalOrders {
         #[arg(short, long)]
@@ -95,7 +115,20 @@ pub enum Commands {
     UserFees {
         #[arg(short, long)]
         user: String,
-    },
+    }
+    // PlaceOrder {
+    //     /// An array of [`OrderRequests`]
+    //     #[arg(short, long)]
+    //     requests: serde_json::Value,
+    //     #[arg(short, long)]
+    //     grouping: String, // `na`, `ntpsl`, `ptpsl`
+    //     #[arg(short, long)]
+    //     builder: String,
+    //     #[arg(short, long)]
+    //     vault_address: Option<String>,
+    //     #[arg(short, long)]
+    //     expires_after: u64,
+    // },
 }
 
 #[derive(Parser)]

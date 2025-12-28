@@ -7,13 +7,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EvmContract {
-    address: String,
+    pub address: String,
     #[serde(
         default,
         alias = "evm_extra_wei_decimals",
         alias = "evmExtraWeiDecimals"
     )]
-    evm_extra_wei_decimals: i64,
+    pub evm_extra_wei_decimals: i64,
 }
 
 /// Response type for POST /info with type "spotMeta"

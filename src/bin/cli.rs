@@ -4,30 +4,25 @@ use clap::{Parser, Subcommand};
 use rhyperliquid::{
     cli::{Cli, Commands},
     init_tracing::init_tracing,
-    types::info::user::CandleSnapshotRequest,
+    types::{info::user::CandleSnapshotRequest, ws::SubscriptionResponse},
     HyperliquidClientBuilder,
 };
 use std::env;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    #[cfg(feature = "cli")]
     init_tracing();
 
-    #[cfg(feature = "cli")]
     let cli = Cli::parse();
 
     #[allow(clippy::expect_used)]
-    #[cfg(feature = "cli")]
     let signer = env::var("HL_PRIVATE_KEY").expect("HL_PRIVATE_KEY env var is missing");
 
-    #[cfg(feature = "cli")]
     let mut hyperliquid = &mut HyperliquidClientBuilder::new();
 
     // Check if the user provided a network, default to testnet
-    #[cfg(feature = "cli")]
     if let Some(network) = cli.network {
-        match network.to_lowercase().as_str() {
+        match (network as String).to_lowercase().as_str() {
             "testnet" => {
                 hyperliquid = hyperliquid.testnet();
             }
@@ -41,23 +36,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Check if user provides permission to check env var for signer key
-    #[cfg(feature = "cli")]
+
     if let Some(signer_permission) = cli.allow_signer_key_env {
         if signer_permission {
             hyperliquid = hyperliquid.with_wallet(LocalSigner::from_slice(signer.as_bytes())?);
         }
     }
 
-    #[cfg(feature = "cli")]
     let client = hyperliquid.build()?;
-    #[cfg(feature = "cli")]
+
     let info_api = &client.info();
 
-    #[cfg(feature = "cli")]
+    let mut subs = client.subscriptions().await?;
+    let mut events = subs.events;
+
     match cli.command {
         Commands::AllMids { dex } => {
             let all_mids = info_api.all_mids(dex).await?;
             tracing::info!("{:?}", all_mids);
+        }
+        Commands::SubscribeAllMids { dex } => {
+            while let Ok(SubscriptionResponse::AllMids(ws_all_mids)) = events.recv().await {
+                tracing::info!("{}", serde_json::to_string_pretty(&ws_all_mids)?);
+            }
         }
         Commands::OpenOrders { user, dex } => {
             let open_orders = info_api.open_orders(&user, dex.as_deref()).await?;
@@ -107,6 +108,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .await?;
             tracing::info!("{:?}", l2_book);
         }
+        Commands::SubscribeL2Book {
+            coin,
+            n_sig_figs,
+            mantissa,
+        } => {
+            while let Ok(SubscriptionResponse::L2Book(ws_l2_book)) = events.recv().await {
+                tracing::info!("{}", serde_json::to_string_pretty(&ws_l2_book)?);
+            }
+        }
         Commands::CandleSnapshot {
             coin,
             interval,
@@ -123,6 +133,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .await?;
 
             tracing::info!("{:?}", snapshot);
+        }
+        Commands::SubscribeCandleSnapshot { coin, interval } => {
+            while let Ok(SubscriptionResponse::Candle(ws_candle)) = events.recv().await {
+                tracing::info!("{}", serde_json::to_string_pretty(&ws_candle)?);
+            }
         }
         Commands::HistoricalOrders { user } => {
             let historical_orders = info_api.historical_orders(&user).await?;

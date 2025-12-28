@@ -6,23 +6,12 @@ A Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perp
 
 ## Features
 
-- Market data queries (spot & perpetuals)
-- Account information retrieval
-- Order book snapshots
-- Historical candle data
-- User fills and funding history
-- Order placement and cancellation
-- Position management
-- Vault operations
-- Command-line interface for quick queries
-
-## Project Status
-
-- [x] Complete REST Info API (market data)
-- [x] EIP-712 authentication & message signing
-- [x] Exchange API (order placement, cancellation)
-- [x] WebSocket streaming (real-time data feeds)
-- [x] CLI for market data and account queries
+- **Market Data**: Real-time and historical price data, orderbooks, candles
+- **Account Management**: Positions, balances, fills, funding history
+- **Trading Operations**: Order placement, cancellation, modification, leverage management
+- **Vault Operations**: Vault queries and equity tracking
+- **WebSocket Streaming**: Low-latency real-time data feeds with automatic reconnection
+- **CLI Interface**: Production-ready command-line tool for traders and developers. Currently the CLI does not support queries from the Exchange API.
 
 ## Quick Start
 
@@ -81,56 +70,129 @@ cargo run --bin cli --features=cli -- candle-snapshot \
 cargo run --bin cli --features=cli -- vault-details --vault-address 0x...
 ```
 
-#### CLI Options
+### WebSocket Subscriptions
 
-**Global Flags:**
-- `--network <mainnet|testnet>` - Network to connect to (default: mainnet)
-- `--allow-signer-key-env` - Allow reading private key from `HL_PRIVATE_KEY` environment variable
+Subscribe to real-time data feeds using the WebSocket interface:
+```bash
+# Subscribe to open orders updates (requires HL_PRIVATE_KEY env var)
+export HL_PRIVATE_KEY=your_private_key_here
+RUST_LOG=info cargo run --bin cli --features=cli -- \
+  --subscriptions true \
+  subscribe-open-orders \
+  --user 0xYourAddress
 
-**Available Commands:**
-- `all-mids` - Get mid prices for all assets
-- `open-orders` - Get user's open orders
-- `frontend-open-orders` - Get frontend-formatted open orders
-- `user-fills` - Get user's fill history
-- `user-fills-by-time` - Get fills within time range
-- `user-rate-limit` - Check user's rate limit status
-- `order-status` - Get status of specific order
-- `l2-book` - Get L2 orderbook snapshot
-- `candle-snapshot` - Get historical candle data
-- `historical-orders` - Get user's historical orders
-- `sub-accounts` - Get user's sub-accounts
-- `vault-details` - Get vault information
-- `user-vault-equities` - Get user's vault equity
-- `user-role` - Get user's role information
-- `portfolio` - Get user's portfolio
-- `referral` - Get user's referral information
-- `user-fees` - Get user's fee information
+# Subscribe to order book updates
+cargo run --bin cli --features=cli -- \
+  --subscriptions true \
+  subscribe-l2-book \
+  --coin BTC
+
+# Subscribe to all mid prices
+cargo run --bin cli --features=cli -- \
+  --subscriptions true \
+  subscribe-all-mids
+
+# Subscribe to trades
+cargo run --bin cli --features=cli -- \
+  --subscriptions true \
+  subscribe-trades \
+  --coin ETH
+```
+
+WebSocket subscriptions stream live updates until interrupted with `Ctrl+C`. Use `RUST_LOG=info` to see subscription confirmations and data updates.
+
+## CLI Reference
+
+### Global Options
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--network <mainnet\|testnet>` | Network to connect to | `mainnet` |
+| `--allow-signer-key-env` | Allow reading private key from `HL_PRIVATE_KEY` | `false` |
+| `--subscriptions <true\|false>` | Enable WebSocket subscription mode | `false` |
+
+### Commands
+
+#### Market Data
+
+| Command | Description |
+|---------|-------------|
+| `all-mids` | Get mid prices for all assets |
+| `l2-book` | Get L2 orderbook snapshot |
+| `candle-snapshot` | Get historical candle data |
+
+#### Account & Portfolio
+
+| Command | Description |
+|---------|-------------|
+| `open-orders` | Get user's open orders |
+| `frontend-open-orders` | Get frontend-formatted open orders |
+| `user-fills` | Get user's fill history |
+| `user-fills-by-time` | Get fills within time range |
+| `user-rate-limit` | Check user's rate limit status |
+| `order-status` | Get status of specific order |
+| `historical-orders` | Get user's historical orders |
+| `portfolio` | Get user's portfolio |
+| `user-fees` | Get user's fee information |
+| `sub-accounts` | Get user's sub-accounts |
+| `user-role` | Get user's role information |
+| `referral` | Get user's referral information |
+
+#### Vault Operations
+
+| Command | Description |
+|---------|-------------|
+| `vault-details` | Get vault information |
+| `user-vault-equities` | Get user's vault equity |
+
+#### WebSocket Subscriptions
+
+**Market Data Streams**
+
+| Command | Description |
+|---------|-------------|
+| `subscribe-all-mids` | Stream all mid prices |
+| `subscribe-l2-book` | Stream orderbook updates |
+| `subscribe-candle-snapshot` | Stream candle updates |
+| `subscribe-active-asset-ctx` | Stream active asset context |
+| `subscribe-bbo` | Stream best bid/offer updates |
+
+**Account & Trading Streams**
+
+| Command | Description |
+|---------|-------------|
+| `subscribe-open-orders` | Stream open orders updates |
+| `subscribe-user-events` | Stream user trading events |
+| `subscribe-user-fills` | Stream user fill updates |
+| `subscribe-user-funding` | Stream user funding updates |
+| `subscribe-user-non-funding-ledger-updates` | Stream non-funding ledger updates |
+| `subscribe-active-asset-data` | Stream active asset data for user |
+
+**Advanced Streams**
+
+| Command | Description |
+|---------|-------------|
+| `subscribe-notifications` | Stream user notifications |
+| `subscribe-web-data3` | Stream web data updates |
+| `subscribe-twap-states` | Stream TWAP order states |
+| `subscribe-clearinghouse-state` | Stream clearinghouse state |
+| `subscribe-user-twap-slice-fills` | Stream TWAP slice fills |
+| `subscribe-user-twap-history` | Stream TWAP order history |
 
 Use `--help` on any command for detailed parameter information:
 ```bash
 cargo run --bin cli --features=cli -- l2-book --help
 ```
 
-## Trading
+## Trading Examples
 
-For order placement and cancellation examples, see [`examples/basic_order.rs`](examples/basic_order.rs).
+Comprehensive examples demonstrating real trading workflows:
 
-For account transfer examples, see [`examples/account_transfer.rs`](examples/account_transfer.rs).
-
-For position leverage and managing an isolated position see [`examples/leverage_position.rs`](examples/leverage_position.rs).
-
-For advanced order examples see [`examples/advanced_order.rs`](examples/advanced_order.rs).
-
-For TWAP order placement see [`examples/twap_order.rs`](examples/twap_order.rs).
-
-## Stability and API Guarantees
-This crate is under active development.
-
-**Breaking changes** may occur between minor versions (0.1 -> 0.2).
-
-**Public API** is subject to refinement based on usage feedback.
-
-**Testnet testing** is strongly recommended before mainnet use.
+- **[`basic_order.rs`](examples/basic_order.rs)** - Order placement and cancellation
+- **[`account_transfer.rs`](examples/account_transfer.rs)** - Account transfers
+- **[`leverage_position.rs`](examples/leverage_position.rs)** - Position leverage management
+- **[`advanced_order.rs`](examples/advanced_order.rs)** - Advanced order types
+- **[`twap_order.rs`](examples/twap_order.rs)** - TWAP order placement
 
 ## Installation
 
@@ -139,26 +201,22 @@ This crate is under active development.
 Add to your `Cargo.toml`:
 ```toml
 [dependencies]
-rhyperliquid = "0.1"
+rhyperliquid = "0.2"
 tokio = { version = "1.41", features = ["full"] }
 ```
 
 ### CLI Installation
 ```bash
-# Install from source with CLI support
-cargo install --path . --features=cli --bin cli
+# Install from crates.io
+cargo install rhyperliquid --features=cli
 
-# Or clone and build
+# Or install from source
 git clone https://github.com/elijahhampton/rhyperliquid.git
 cd rhyperliquid
-cargo build --release --features=cli --bin cli
-
-# Binary will be at target/release/cli
+cargo install --path . --features=cli --bin cli
 ```
 
-### From Source
-
-Clone and build the repository:
+### Building from Source
 ```bash
 # Clone the repository
 git clone https://github.com/elijahhampton/rhyperliquid.git
@@ -177,13 +235,30 @@ cargo test --all-features
 cargo doc --open
 ```
 
+## Stability and API Guarantees
+
+This crate is under active development.
+
+- **Breaking changes** may occur between minor versions (0.1 → 0.2)
+- **Public API** is subject to refinement based on usage feedback
+- **Testnet testing** is strongly recommended before mainnet use
+
+## Documentation
+
+- [API Documentation](https://docs.rs/rhyperliquid)
+- [Hyperliquid Official Docs](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api)
+- [Examples](./examples)
+
 ## Getting Help
-If you have any questions, first see if the answer to your question can be found in the [Hyperliquid Docs](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api).
 
-If the answer is not there:
+If you have questions:
 
-- Open a discussion with your question, or
-- Open an issue with the bug
+1. Check the [Hyperliquid API Documentation](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api)
+2. Search existing [GitHub Issues](https://github.com/elijahhampton/rhyperliquid/issues)
+3. Open a new [Discussion](https://github.com/elijahhampton/rhyperliquid/discussions) for questions
+4. Open an [Issue](https://github.com/elijahhampton/rhyperliquid/issues/new) for bugs
+
+## Requirements
 
 ### Minimum Supported Rust Version (MSRV)
 
@@ -195,3 +270,18 @@ rustc --version
 # Update if needed
 rustup update stable
 ```
+
+## License
+
+Licensed under either of:
+
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+
+at your option.
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

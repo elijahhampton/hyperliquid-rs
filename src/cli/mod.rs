@@ -1,6 +1,6 @@
-use clap::{Parser, Subcommand};
 #[allow(unused_imports)]
 use crate::types::exchange::OrderRequest;
+use clap::{Parser, Subcommand};
 
 #[derive(Subcommand)]
 pub enum Commands {
@@ -115,27 +115,78 @@ pub enum Commands {
     UserFees {
         #[arg(short, long)]
         user: String,
-    }
-    // PlaceOrder {
-    //     /// An array of [`OrderRequests`]
-    //     #[arg(short, long)]
-    //     requests: serde_json::Value,
-    //     #[arg(short, long)]
-    //     grouping: String, // `na`, `ntpsl`, `ptpsl`
-    //     #[arg(short, long)]
-    //     builder: String,
-    //     #[arg(short, long)]
-    //     vault_address: Option<String>,
-    //     #[arg(short, long)]
-    //     expires_after: u64,
-    // },
+    },
+    SubscribeNotifications {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeWebData3 {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeTwapStates {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeClearinghouseState {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeOpenOrders {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeUserEvents {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeUserFills {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeUserFunding {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeUserNonFundingLedgerUpdates {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeActiveAssetCtx {
+        #[arg(short, long)]
+        coin: String,
+    },
+    SubscribeActiveAssetData {
+        #[arg(short, long)]
+        user: String,
+        #[arg(short, long)]
+        coin: String,
+    },
+    SubscribeUserTwapSliceFills {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeUserTwapHistory {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeBbo {
+        #[arg(short, long)]
+        user: String,
+    },
 }
 
 #[derive(Parser)]
 pub struct Cli {
+    /// Enables subscriptions through the CLI
+    #[arg(short, long)]
+    pub subscriptions: Option<bool>,
+
+    /// Picks a specific network, i.e. 'testnet' or 'mainnet'
     #[arg(short, long)]
     pub network: Option<String>,
 
+    /// Allows CLI to use HL_PRIVATE_KEY env var in configuration (requires HL_PRIVATE_KEY end var)
     #[arg(short, long)]
     pub allow_signer_key_env: Option<bool>,
 

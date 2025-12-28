@@ -130,7 +130,14 @@ impl<'client> ExchangeApi<'client> {
             builder,
         };
 
-        let sig = sign_l1_action(&signer, &action, vault_address.clone(), nonce, expires_after, false)?;
+        let sig = sign_l1_action(
+            &signer,
+            &action,
+            vault_address.clone(),
+            nonce,
+            expires_after,
+            false,
+        )?;
 
         let signature = Eip712Signature {
             r: format!("0x{:x}", sig.r()),
@@ -203,7 +210,14 @@ impl<'client> ExchangeApi<'client> {
 
         let nonce = current_time_millis();
 
-        let sig = sign_l1_action(&signer, &action, vault_address.clone(), nonce, expires_after, false)?;
+        let sig = sign_l1_action(
+            &signer,
+            &action,
+            vault_address.clone(),
+            nonce,
+            expires_after,
+            false,
+        )?;
 
         let signature = Eip712Signature {
             r: format!("0x{:x}", sig.r()),

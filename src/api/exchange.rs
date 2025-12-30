@@ -747,7 +747,7 @@ impl<'client> ExchangeApi<'client> {
 
         let nonce = current_time_millis();
 
-        let from_sub_account_param = from_sub_account.map_or_else(String::new, |v| v.to_string());
+        let from_sub_account_param = from_sub_account.unwrap_or_default();
 
         let action = SendAssetAction {
             type_: "sendAsset".to_string(),
@@ -930,7 +930,7 @@ impl<'client> ExchangeApi<'client> {
 
         let action = VaultTransferAction {
             type_: "vaultTransfer".to_string(),
-            vault_address: vault_address.to_string(),
+            vault_address: vault_address.clone(),
             is_deposit,
             usd: usd_amount,
         };

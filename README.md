@@ -39,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ### CLI Usage
 
-The CLI provides quick access to market data and account information from your terminal.
+The CLI provides quick access to market data and account information from your terminal. Below you can find a list of all supported CLI commands. rhyperliquid intentionally only supports place_order and cancel_order (by order id) from the CLI. Other Exchange API commands will be added by request or open source contribution.
 ```bash
 # Run CLI commands
 cargo run --bin cli --features=cli -- [OPTIONS] <COMMAND>
@@ -99,7 +99,7 @@ cargo run --bin cli --features=cli -- \
   --coin ETH
 ```
 
-WebSocket subscriptions stream live updates until interrupted with `Ctrl+C`. Use `RUST_LOG=info` to see subscription confirmations and data updates.
+WebSocket subscriptions stream live updates until interrupted with `Ctrl+C`.
 
 ## CLI Reference
 
@@ -112,6 +112,13 @@ WebSocket subscriptions stream live updates until interrupted with `Ctrl+C`. Use
 | `--subscriptions <true\|false>` | Enable WebSocket subscription mode | `false` |
 
 ### Commands
+
+#### Exchange API
+
+| Command | Description |
+|---------|-------------|
+| `order` | Place an order |
+| `cancel` | Cancel an order by its order id |
 
 #### Market Data
 

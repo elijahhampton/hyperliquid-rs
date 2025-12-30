@@ -1,5 +1,6 @@
 #![allow(unused_imports, clippy::too_many_lines)]
-use alloy::signers::local::LocalSigner;
+use alloy::{hex, signers::local::LocalSigner};
+use anyhow::anyhow;
 use clap::{Parser, Subcommand};
 use rhyperliquid::{
     cli::{Cli, Commands},
@@ -16,12 +17,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     #[allow(clippy::expect_used)]
-    let signer = env::var("HL_PRIVATE_KEY").expect("HL_PRIVATE_KEY env var is missing");
     let mut hyperliquid = &mut HyperliquidClientBuilder::new();
 
     // Check if the user provided a network, default to testnet
     if let Some(network) = cli.network {
-        match (network as String).to_lowercase().as_str() {
+        let network: String = network;
+        match network.to_lowercase().as_str() {
             "testnet" => {
                 hyperliquid = hyperliquid.testnet();
             }
@@ -34,21 +35,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         hyperliquid = hyperliquid.testnet();
     }
 
-    if let Some(subscriptions) = cli.subscriptions {
-        if subscriptions == true {
-            hyperliquid = hyperliquid.with_subscriptions();
-        }
-    }
+    // Enable subscriptions API
+    hyperliquid = hyperliquid.with_subscriptions();
 
     // Check if user provides permission to check env var for signer key
     if let Some(signer_permission) = cli.allow_signer_key_env {
         if signer_permission {
-            hyperliquid = hyperliquid.with_wallet(LocalSigner::from_slice(signer.as_bytes())?);
+            let signer_str = std::env::var("HL_PRIVATE_KEY")?;
+
+            let key_hex = signer_str.strip_prefix("0x").unwrap_or(&signer_str);
+            let key_bytes = hex::decode(key_hex)?;
+
+            hyperliquid = hyperliquid.with_wallet(LocalSigner::from_slice(&key_bytes)?);
         }
     }
 
     let client = hyperliquid.build()?;
     let info_api = &client.info();
+    let exchange_api = &client.exchange();
     let mut subs = client.subscriptions().await?;
 
     match cli.command {
@@ -178,6 +182,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let user_fees = info_api.fees(&user).await?;
             tracing::info!("{:?}", user_fees);
             return Ok(());
+        }
+        Commands::Order(cmd_args) => {
+            let meta = info_api.spot_metadata().await?;
+
+            let asset_idx = meta
+                .tokens
+                .iter()
+                .position(|asset| asset.name == cmd_args.coin())
+                .ok_or_else(|| anyhow!("Unknown coin: {}", cmd_args.coin()))?;
+
+            let (order, grouping, builder, vault, expires) =
+                cmd_args.build(u32::try_from(asset_idx).expect("index conversion to fit into u32"));
+
+            exchange_api
+                .place_order(order, grouping, builder, vault, expires)
+                .await?;
+        }
+        Commands::Cancel(cmd_args) => {
+            let meta = info_api.spot_metadata().await?;
+
+            let asset_idx = meta
+                .tokens
+                .iter()
+                .position(|asset| asset.name == cmd_args.coin())
+                .ok_or_else(|| anyhow!("Unknown coin: {}", cmd_args.coin()))?;
+
+            let (cancel_req, vault_address, expires_after) =
+                cmd_args.build(u32::try_from(asset_idx).expect("index conversion to fit into u32"));
+
+            exchange_api
+                .cancel_order(cancel_req, vault_address, expires_after)
+                .await?;
         }
         Commands::SubscribeOpenOrders { user } => {
             subs.subscribe_open_orders(user).await?;

@@ -1,7 +1,8 @@
-use rust_decimal::Decimal;
 /// Response types for the info endpoints that are specific to spot.
 /// Additional information for endpoint responses can be found
 /// here: `<https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/spot>`
+
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -28,6 +29,7 @@ pub struct SpotToken {
     pub is_canonical: bool,
     pub evm_contract: Option<EvmContract>,
     pub full_name: Option<String>,
+    #[serde(with = "rust_decimal::serde::str")]
     pub deployer_trading_fee_share: Decimal,
 }
 

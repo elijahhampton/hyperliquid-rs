@@ -1,9 +1,15 @@
+mod arguments;
+
+pub use arguments::{CancelOrderByOidCmd, OrderCmd, OrderTypeArg};
+
 #[allow(unused_imports)]
 use crate::types::exchange::OrderRequest;
 use clap::{Parser, Subcommand};
 
 #[derive(Subcommand)]
 pub enum Commands {
+    Order(OrderCmd),
+    Cancel(CancelOrderByOidCmd),
     AllMids {
         #[arg(short, long)]
         dex: Option<String>,
@@ -178,15 +184,11 @@ pub enum Commands {
 
 #[derive(Parser)]
 pub struct Cli {
-    /// Enables subscriptions through the CLI
-    #[arg(short, long)]
-    pub subscriptions: Option<bool>,
-
     /// Picks a specific network, i.e. 'testnet' or 'mainnet'
     #[arg(short, long)]
     pub network: Option<String>,
 
-    /// Allows CLI to use HL_PRIVATE_KEY env var in configuration (requires HL_PRIVATE_KEY end var)
+    /// Allows CLI to use `HL_PRIVATE_KEY` env var in configuration (requires `HL_PRIVATE_KEY` end var)
     #[arg(short, long)]
     pub allow_signer_key_env: Option<bool>,
 

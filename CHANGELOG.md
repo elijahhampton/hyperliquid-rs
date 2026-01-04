@@ -4,7 +4,7 @@
 
 ### Added
 - WebSocket streaming support for real-time market data
-- Subscription APIs for orderbook, trades, candles, and user events
+- Adds complete support for Subscription API
 - CLI binary for terminal-based queries (`--features cli`)
 - CLI commands for order placement and cancellation
 - Network selection via `--network` flag (mainnet/testnet)

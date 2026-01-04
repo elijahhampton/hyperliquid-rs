@@ -62,22 +62,22 @@ pub struct PerpetualsMetadata {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AssetContext {
-     #[serde(with = "rust_decimal::serde::str")]
+    #[serde(with = "rust_decimal::serde::str")]
     pub day_ntl_vlm: Decimal,
-     #[serde(with = "rust_decimal::serde::str")]
+    #[serde(with = "rust_decimal::serde::str")]
     pub funding: Decimal,
     pub impact_pxs: Option<[String; 2]>,
-     #[serde(with = "rust_decimal::serde::str")]
+    #[serde(with = "rust_decimal::serde::str")]
     pub mark_px: Decimal,
-     #[serde(with = "rust_decimal::serde::str_option")]
+    #[serde(with = "rust_decimal::serde::str_option")]
     pub mid_px: Option<Decimal>,
-     #[serde(with = "rust_decimal::serde::str")]
+    #[serde(with = "rust_decimal::serde::str")]
     pub open_interest: Decimal,
-     #[serde(with = "rust_decimal::serde::str")]
+    #[serde(with = "rust_decimal::serde::str")]
     pub oracle_px: Decimal,
-     #[serde(with = "rust_decimal::serde::str_option")]
+    #[serde(with = "rust_decimal::serde::str_option")]
     pub premium: Option<Decimal>,
-     #[serde(with = "rust_decimal::serde::str")]
+    #[serde(with = "rust_decimal::serde::str")]
     pub prev_day_px: Decimal,
 }
 
@@ -218,7 +218,7 @@ pub struct ActiveAssetData {
     pub leverage: Leverage,
     pub max_trade_szs: [String; 2],
     pub available_to_trade: [String; 2],
-     #[serde(with = "rust_decimal::serde::str")]
+    #[serde(with = "rust_decimal::serde::str")]
     pub mark_px: Decimal,
 }
 
@@ -226,11 +226,11 @@ pub struct ActiveAssetData {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PerpDexLimits {
-     #[serde(with = "rust_decimal::serde::str")]
+    #[serde(with = "rust_decimal::serde::str")]
     pub total_oi_cap: Decimal,
-     #[serde(with = "rust_decimal::serde::str")]
+    #[serde(with = "rust_decimal::serde::str")]
     pub oi_sz_cap_per_perp: Decimal,
-     #[serde(with = "rust_decimal::serde::str")]
+    #[serde(with = "rust_decimal::serde::str")]
     pub max_transfer_ntl: Decimal,
     /// Array of [coin, cap] pairs
     pub coin_to_oi_cap: Vec<(Decimal, Decimal)>,
@@ -240,6 +240,6 @@ pub struct PerpDexLimits {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PerpDexStatus {
-     #[serde(with = "rust_decimal::serde::str")]
+    #[serde(with = "rust_decimal::serde::str")]
     pub total_net_deposit: Decimal,
 }

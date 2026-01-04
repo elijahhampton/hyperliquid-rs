@@ -11,13 +11,13 @@ More concretely, our principles are:
 
 1. **Type Safety & Financial Precision**: Every API response, order type, and market data structure is modeled in Rust's type system to catch invalid requests at compile time. We use `rust_decimal` for all financial calculations to eliminate floating-point errors. While network and API errors remain runtime concerns, the library prevents entire classes of invalid requests before they're sent.
 
-2. **Correctness Over Speed**: rhyperliquid prioritizes getting trading operations right. This means proper EIP-712 signing implementation, correct msgpack serialization for action hashing, and careful handling of Hyperliquid's WebSocket heartbeat protocol. We optimize client-side performance where it matters, but understand that network latency to Hyperliquid's servers will dominate round-trip times.
+2. **Correctness Over Speed**: rhyperliquid prioritizes getting trading operations right. This means proper EIP-712 signing implementation, correct msgpack serialization for action hashing, and careful handling of Hyperliquid's WebSocket heartbeat protocol.
 
-3. **Modularity**: The crate is structured as composable components. Whether you need just the REST client for backtesting, WebSocket streams for live data, or the full CLI for manual trading, you can depend on only what you need. All public APIs are documented with examples showing real-world usage patterns.
+3. **Modularity**: The crate is structured as composable components. Whether you need just the REST client for backtesting, WebSocket streams for live data, or the CLI for manual trading. All public APIs are documented with examples showing real-world usage patterns.
 
 4. **Developer Experience**: We believe trading infrastructure should be approachable. The library provides builder patterns for configuration, comprehensive error messages that explain what went wrong, and examples organized by user workflows rather than individual functions. Both library users and CLI users should find the interface intuitive.
 
-5. **Battle-Tested Foundations**: By leveraging proven crates (tokio for async, reqwest for HTTP, Alloy for Ethereum cryptography), we build on solid foundations rather than reinventing implementations. Our authentication follows Hyperliquid's exact specifications for both testnet and mainnet environments.
+5. **Battle-Tested Foundations**: By leveraging proven crates (tokio for async, reqwest for HTTP, Alloy for Ethereum cryptography), we build on solid foundations rather than reinventing implementations. Our authentication follows Hyperliquid's specifications for both testnet and mainnet environments.
 
 6. **Open & Extensible**: rhyperliquid is free open source software licensed under Apache/MIT. This enables anyone to build proprietary strategies, modify the client for their needs, or integrate it into larger systems without licensing concerns. We welcome contributions that improve reliability, add features, or enhance documentation.
 

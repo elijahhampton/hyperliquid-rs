@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::primitive::str;
 
 use crate::types::serialize::decimal_array;
-use serde_with::{serde_as};
+use serde_with::serde_as;
 
 /// WebSocket trade data
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -67,10 +67,7 @@ pub struct WsNotification {
 /// All mid prices
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde_as]
-pub struct WsAllMids(
-    #[serde_as(as = "HashMap<_, DisplayFromStr>")]
-    pub HashMap<String, Decimal>,
-);
+pub struct WsAllMids(#[serde_as(as = "HashMap<_, DisplayFromStr>")] pub HashMap<String, Decimal>);
 
 /// Candlestick data
 #[derive(Debug, Clone, Serialize, Deserialize)]

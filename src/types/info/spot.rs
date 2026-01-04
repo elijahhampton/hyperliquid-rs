@@ -1,7 +1,6 @@
 /// Response types for the info endpoints that are specific to spot.
 /// Additional information for endpoint responses can be found
 /// here: `<https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/spot>`
-
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
@@ -55,9 +54,9 @@ pub struct SpotMetadata {
 pub struct SpotAssetContext {
     #[serde(with = "rust_decimal::serde::str")]
     pub day_ntl_vlm: Decimal,
-     #[serde(with = "rust_decimal::serde::str_option")]
+    #[serde(with = "rust_decimal::serde::str_option")]
     pub mark_px: Option<Decimal>,
-     #[serde(with = "rust_decimal::serde::str_option")]
+    #[serde(with = "rust_decimal::serde::str_option")]
     pub mid_px: Option<Decimal>,
     #[serde(with = "rust_decimal::serde::str_option")]
     pub prev_day_px: Option<Decimal>,

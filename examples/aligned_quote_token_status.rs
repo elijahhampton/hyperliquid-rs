@@ -1,8 +1,5 @@
 #![allow(clippy::all)]
-use rhyperliquid::{
-    example_helpers::testnet_client,
-    init_tracing::init_tracing,
-};
+use rhyperliquid::{example_helpers::testnet_client, init_tracing::init_tracing};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

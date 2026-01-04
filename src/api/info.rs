@@ -572,7 +572,10 @@ impl<'client> InfoApi<'client> {
         self.post(payload).await
     }
 
-    pub async fn aligned_quote_token_status(&self, token: u32) -> Result<Option<AlignedQuoteTokenInfo>> {
+    pub async fn aligned_quote_token_status(
+        &self,
+        token: u32,
+    ) -> Result<Option<AlignedQuoteTokenInfo>> {
         let payload = json!({
             "type": "alignedQuoteTokenInfo",
             "token": token

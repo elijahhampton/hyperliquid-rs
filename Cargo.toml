@@ -16,6 +16,11 @@ rust-version = "1.75"
 default = []
 cli = []
 
+[[bin]]
+name = "cli"
+path = "src/bin/cli.rs"
+required-features = ["cli"]
+
 [badges]
 maintenance = { status = "actively-developed" }
 

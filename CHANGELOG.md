@@ -5,13 +5,16 @@
 ### Added
 - WebSocket streaming support for real-time market data
 - Subscription APIs for orderbook, trades, candles, and user events
-- CLI binary for terminal-based queries (`--features=cli`)
-- CLI commands for market data and account management
+- CLI binary for terminal-based queries (`--features cli`)
+- CLI commands for order placement and cancellation
 - Network selection via `--network` flag (mainnet/testnet)
 - Environment-based authentication for CLI via `HL_PRIVATE_KEY`
 
 ### Changed
 - Project status: WebSocket and CLI marked as complete
+- Removes subscription command line arguments
+- Fixes rust_decimal::Decimal serde deserialization for response types.
+- Updates AllMids from 'type' to 'struct' to support correct response format.
 
 ## [0.1.0] - 2025-12-10
 

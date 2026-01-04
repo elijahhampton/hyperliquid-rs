@@ -32,10 +32,11 @@ pub struct OpenOrdersRequest {
 #[derive(Debug, Deserialize)]
 pub struct OpenOrder {
     pub coin: String,
-    #[serde(rename = "limitPx")]
+    #[serde(rename = "limitPx", with = "rust_decimal::serde::str")]
     pub limit_px: Decimal,
     pub oid: u64,
     pub side: String,
+    #[serde(with = "rust_decimal::serde::str")]
     pub sz: Decimal,
     pub timestamp: u64,
 }
@@ -62,21 +63,22 @@ pub struct FrontendOpenOrder {
     pub is_position_tpsl: bool,
     #[serde(rename = "isTrigger")]
     pub is_trigger: bool,
-    #[serde(rename = "limitPx")]
+    #[serde(rename = "limitPx", with = "rust_decimal::serde::str")]
     pub limit_px: Decimal,
     pub oid: u64,
     #[serde(rename = "orderType")]
     pub order_type: String,
-    #[serde(rename = "origSz")]
+    #[serde(rename = "origSz", with = "rust_decimal::serde::str")]
     pub orig_sz: Decimal,
     #[serde(rename = "reduceOnly")]
     pub reduce_only: bool,
     pub side: String,
+    #[serde(with = "rust_decimal::serde::str")]
     pub sz: Decimal,
     pub timestamp: u64,
     #[serde(rename = "triggerCondition")]
     pub trigger_condition: String,
-    #[serde(rename = "triggerPx")]
+    #[serde(rename = "triggerPx", with = "rust_decimal::serde::str")]
     pub trigger_px: Decimal,
 }
 
@@ -100,7 +102,7 @@ pub struct UserFillsRequest {
 
 #[derive(Debug, Deserialize)]
 pub struct PerpetualFill {
-    #[serde(rename = "closedPnl")]
+    #[serde(rename = "closedPnl", with = "rust_decimal::serde::str")]
     pub closed_pnl: Decimal,
     /// Refer to `<https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/asset-ids>` for more information
     /// on how asset IDs work.
@@ -109,13 +111,16 @@ pub struct PerpetualFill {
     pub dir: String,
     pub hash: String,
     pub oid: u64,
+    #[serde(with = "rust_decimal::serde::str")]
     pub px: Decimal,
     pub side: String,
-    #[serde(rename = "startPosition")]
+    #[serde(rename = "startPosition", with = "rust_decimal::serde::str")]
     pub start_position: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub sz: Decimal,
     pub time: u64,
     // The total fee, inclusive of builderFee.
+    #[serde(with = "rust_decimal::serde::str")]
     pub fee: Decimal,
     #[serde(rename = "feeToken")]
     pub fee_token: String,
@@ -143,17 +148,21 @@ pub struct SpotFill {
     /// Refer to `<https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/asset-ids>` for more information
     /// on how asset IDs work.
     pub coin: String,
+    #[serde(with = "rust_decimal::serde::str")]
     pub px: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub sz: Decimal,
     pub side: String,
     pub time: u64,
-    #[serde(rename = "startPosition")]
+    #[serde(rename = "startPosition", with = "rust_decimal::serde::str")]
     pub start_position: Decimal,
     pub dir: String,
+        #[serde(with = "rust_decimal::serde::str")]
     pub closed_pnl: Decimal,
     pub hash: String,
     pub oid: u64,
     pub crossed: bool,
+    #[serde(with = "rust_decimal::serde::str")]
     pub fee: Decimal,
     pub tid: u64,
     #[serde(rename = "feeToken")]
@@ -331,8 +340,9 @@ pub struct Children;
 pub struct Order {
     pub coin: String,
     pub side: String,
-    #[serde(rename = "limitPx")]
+    #[serde(rename = "limitPx", with = "rust_decimal::serde::str")]
     pub limit_px: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub sz: Decimal,
     pub oid: u64,
     pub timestamp: u64,
@@ -340,7 +350,7 @@ pub struct Order {
     pub trigger_condition: String,
     #[serde(rename = "isTrigger")]
     pub is_trigger: bool,
-    #[serde(rename = "triggerPx")]
+    #[serde(rename = "triggerPx", with = "rust_decimal::serde::str")]
     pub trigger_px: Decimal,
     pub children: Vec<Self>,
     #[serde(rename = "isPositionTpsl")]
@@ -349,7 +359,7 @@ pub struct Order {
     pub reduce_only: bool,
     #[serde(rename = "orderType")]
     pub order_type: String,
-    #[serde(rename = "origSz")]
+    #[serde(rename = "origSz", with = "rust_decimal::serde::str")]
     pub orig_sz: Decimal,
     pub tif: String,
     pub cloid: Option<String>,
@@ -368,19 +378,22 @@ pub type UserHistoricalOrders = Vec<HistoricalOrder>;
 
 #[derive(Debug, Deserialize)]
 pub struct SliceFill {
-    #[serde(rename = "closedPnl")]
+    #[serde(rename = "closedPnl", with = "rust_decimal::serde::str")]
     pub closed_pnl: Decimal,
     pub coin: String,
     pub crossed: bool,
     pub dir: String,
     pub hash: String,
     pub oid: u64,
+    #[serde(with = "rust_decimal::serde::str")]
     pub px: Decimal,
     pub side: String,
-    #[serde(rename = "startPosition")]
+    #[serde(rename = "startPosition", with = "rust_decimal::serde::str")]
     pub start_position: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub sz: Decimal,
     pub time: u64,
+    #[serde(with = "rust_decimal::serde::str")]
     pub fee: Decimal,
     #[serde(rename = "feeToken")]
     pub fee_token: String,
@@ -484,9 +497,11 @@ pub struct SpotState {
 pub struct SpotBalance {
     pub coin: String,
     pub token: u64,
+    #[serde(with = "rust_decimal::serde::str")]
     pub total: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub hold: Decimal,
-    #[serde(rename = "entryNtl")]
+    #[serde(rename = "entryNtl", with = "rust_decimal::serde::str")]
     pub entry_ntl: Decimal,
 }
 
@@ -538,6 +553,7 @@ pub struct Follower {
     pub user: String,
     #[serde(rename = "vaultEquity", with = "rust_decimal::serde::str")]
     pub vault_equity: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub pnl: Decimal,
     #[serde(rename = "allTimePnl", with = "rust_decimal::serde::str")]
     pub all_time_pnl: Decimal,
@@ -571,6 +587,7 @@ pub struct VaultDetails {
     pub leader: String,
     pub description: String,
     pub portfolio: Vec<PortfolioEntry>,
+    #[serde(with = "rust_decimal::serde::str")]
     pub apr: Decimal,
     #[serde(rename = "followerState")]
     pub follower_state: Option<FollowerState>, // null in example
@@ -604,6 +621,7 @@ pub struct UserRequest {
 pub struct VaultDeposit {
     #[serde(rename = "vaultAddress")]
     pub vault_address: String,
+    #[serde(with = "rust_decimal::serde::str")]
     pub equity: Decimal,
 }
 

@@ -37,7 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let asset_id = format!("@{}", idx);
     let all_mids = info_api.all_mids(None).await?;
-    let doge_price = all_mids.get(&asset_id).ok_or(HyperliquidError::Internal(
+    let doge_price = all_mids.0.get(&asset_id).ok_or(HyperliquidError::Internal(
         "Missing asset in universe".to_string(),
     ))?;
 

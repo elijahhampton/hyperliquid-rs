@@ -23,17 +23,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
     tracing::info!("{:?}", spot_deploy_action_information);
 
-    let spot_pair_deploy_auction_information = hyperliquid
-        .info()
-        .spot_pair_deploy_auction_information()
-        .await?;
-    tracing::info!("{:?}", spot_pair_deploy_auction_information);
+    // let spot_pair_deploy_auction_information = hyperliquid
+    //     .info()
+    //     .spot_pair_deploy_auction_information()
+    //     .await?;
+    // tracing::info!("{:?}", spot_pair_deploy_auction_information);
 
-    let token_information = hyperliquid
-        .info()
-        .token_information("0x00000000000000000000000000000000")
-        .await?;
-    tracing::info!("{:?}", token_information);
+    // let token_information = hyperliquid
+    //     .info()
+    //     .token_information("0x00000000000000000000000000000000")
+    //     .await?;
+    // tracing::info!("{:?}", token_information);
 
     Ok(())
 }

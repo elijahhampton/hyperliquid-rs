@@ -1,3 +1,4 @@
+use rust_decimal::Decimal;
 /// Response types for the info endpoints that are specific to perpetuals.
 /// Additional information for endpoint responses can be found
 /// here: `<https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/perpetuals>`
@@ -61,15 +62,23 @@ pub struct PerpetualsMetadata {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AssetContext {
-    pub day_ntl_vlm: String,
-    pub funding: String,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub day_ntl_vlm: Decimal,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub funding: Decimal,
     pub impact_pxs: Option<[String; 2]>,
-    pub mark_px: String,
-    pub mid_px: Option<String>,
-    pub open_interest: String,
-    pub oracle_px: String,
-    pub premium: Option<String>,
-    pub prev_day_px: String,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub mark_px: Decimal,
+     #[serde(with = "rust_decimal::serde::str_option")]
+    pub mid_px: Option<Decimal>,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub open_interest: Decimal,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub oracle_px: Decimal,
+     #[serde(with = "rust_decimal::serde::str_option")]
+    pub premium: Option<Decimal>,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub prev_day_px: Decimal,
 }
 
 pub type MetaAndAssetContexts = (PerpetualsMetadata, Vec<AssetContext>);
@@ -209,23 +218,28 @@ pub struct ActiveAssetData {
     pub leverage: Leverage,
     pub max_trade_szs: [String; 2],
     pub available_to_trade: [String; 2],
-    pub mark_px: String,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub mark_px: Decimal,
 }
 
 /// Response type for POST /info with type "perpDexLimits"
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PerpDexLimits {
-    pub total_oi_cap: String,
-    pub oi_sz_cap_per_perp: String,
-    pub max_transfer_ntl: String,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub total_oi_cap: Decimal,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub oi_sz_cap_per_perp: Decimal,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub max_transfer_ntl: Decimal,
     /// Array of [coin, cap] pairs
-    pub coin_to_oi_cap: Vec<(String, String)>,
+    pub coin_to_oi_cap: Vec<(Decimal, Decimal)>,
 }
 
 /// Response type for POST /info with type "perpDexStatus"
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PerpDexStatus {
-    pub total_net_deposit: String,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub total_net_deposit: Decimal,
 }

@@ -3309,6 +3309,7 @@ dependencies = [
  "rust_decimal",
  "serde",
  "serde_json",
+ "serde_with",
  "thiserror 1.0.69",
  "tokio",
  "tokio-test",

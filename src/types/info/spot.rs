@@ -53,9 +53,13 @@ pub struct SpotMetadata {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SpotAssetContext {
+    #[serde(with = "rust_decimal::serde::str")]
     pub day_ntl_vlm: Decimal,
+     #[serde(with = "rust_decimal::serde::str_option")]
     pub mark_px: Option<Decimal>,
+     #[serde(with = "rust_decimal::serde::str_option")]
     pub mid_px: Option<Decimal>,
+    #[serde(with = "rust_decimal::serde::str_option")]
     pub prev_day_px: Option<Decimal>,
 }
 
@@ -67,8 +71,11 @@ pub type SpotMetaAndAssetContexts = (SpotMetadata, Vec<SpotAssetContext>);
 pub struct SpotBalance {
     pub coin: String,
     pub token: i64,
+    #[serde(with = "rust_decimal::serde::str")]
     pub hold: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub total: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub entry_ntl: Decimal,
 }
 
@@ -108,8 +115,11 @@ pub struct DeployState {
 pub struct GasAuction {
     pub start_time_seconds: u64,
     pub duration_seconds: u64,
+    #[serde(with = "rust_decimal::serde::str")]
     pub start_gas: Decimal,
+    #[serde(with = "rust_decimal::serde::str_option")]
     pub current_gas: Option<Decimal>,
+    #[serde(with = "rust_decimal::serde::str")]
     pub end_gas: Decimal,
 }
 

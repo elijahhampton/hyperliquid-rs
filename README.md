@@ -1,17 +1,37 @@
 # rhyperliquid
 
-A Rust SDK for [Hyperliquid](https://hyperliquid.xyz), the high-performance perpetuals decentralized exchange. Built with type safety in mind and async-first architecture.
+## What is rhyperliquid?
+rhyperliquid is a production-grade Rust client library for the Hyperliquid decentralized perpetuals exchange. It provides both a programmatic SDK and terminal-based interfaces for traders and developers who demand type-safety, performance, and reliability in their trading infrastructure. rhyperliquid is built with async-first architecture and is licensed under the Apache and MIT licenses.
 
-⚠️ **Please test all desired operations on Testnet before operating on Mainnet**
+# Design Principles
+
+As a comprehensive Hyperliquid client, rhyperliquid enables developers to build automated trading strategies, analytics tools, and terminal interfaces while maintaining the safety guarantees and performance characteristics that Rust provides. Building a production-ready trading client requires balancing financial precision, cryptographic correctness, and developer experience with practical performance.
+
+More concretely, our principles are:
+
+1. **Type Safety & Financial Precision**: Every API response, order type, and market data structure is modeled in Rust's type system to catch invalid requests at compile time. We use `rust_decimal` for all financial calculations to eliminate floating-point errors. While network and API errors remain runtime concerns, the library prevents entire classes of invalid requests before they're sent.
+
+2. **Correctness Over Speed**: rhyperliquid prioritizes getting trading operations right. This means proper EIP-712 signing implementation, correct msgpack serialization for action hashing, and careful handling of Hyperliquid's WebSocket heartbeat protocol. We optimize client-side performance where it matters, but understand that network latency to Hyperliquid's servers will dominate round-trip times.
+
+3. **Modularity**: The crate is structured as composable components. Whether you need just the REST client for backtesting, WebSocket streams for live data, or the full CLI for manual trading, you can depend on only what you need. All public APIs are documented with examples showing real-world usage patterns.
+
+4. **Developer Experience**: We believe trading infrastructure should be approachable. The library provides builder patterns for configuration, comprehensive error messages that explain what went wrong, and examples organized by user workflows rather than individual functions. Both library users and CLI users should find the interface intuitive.
+
+5. **Battle-Tested Foundations**: By leveraging proven crates (tokio for async, reqwest for HTTP, Alloy for Ethereum cryptography), we build on solid foundations rather than reinventing implementations. Our authentication follows Hyperliquid's exact specifications for both testnet and mainnet environments.
+
+6. **Open & Extensible**: rhyperliquid is free open source software licensed under Apache/MIT. This enables anyone to build proprietary strategies, modify the client for their needs, or integrate it into larger systems without licensing concerns. We welcome contributions that improve reliability, add features, or enhance documentation.
 
 ## Features
 
-- **Market Data**: Real-time and historical price data, orderbooks, candles
-- **Account Management**: Positions, balances, fills, funding history
-- **Trading Operations**: Order placement, cancellation, modification, leverage management
-- **Vault Operations**: Vault queries and equity tracking
-- **WebSocket Streaming**: Low-latency real-time data feeds with automatic reconnection
-- **CLI Interface**: Production-ready command-line tool for traders and developers. Currently the CLI does not support queries from the Exchange API.
+- Market data queries (spot & perpetuals)
+- Account information retrieval
+- Order book snapshots
+- Historical candle data
+- User fills and funding history
+- Order placement and cancellation
+- Position management
+- Vault operations
+- Command-line interface for quick queries
 
 ## Quick Start
 
@@ -195,11 +215,13 @@ cargo run --bin cli --features=cli -- l2-book --help
 
 Comprehensive examples demonstrating real trading workflows:
 
-- **[`basic_order.rs`](examples/basic_order.rs)** - Order placement and cancellation
-- **[`account_transfer.rs`](examples/account_transfer.rs)** - Account transfers
-- **[`leverage_position.rs`](examples/leverage_position.rs)** - Position leverage management
-- **[`advanced_order.rs`](examples/advanced_order.rs)** - Advanced order types
-- **[`twap_order.rs`](examples/twap_order.rs)** - TWAP order placement
+For account transfer examples, see [`examples/account_transfer.rs`](examples/account_transfer.rs).
+
+For position leverage and managing an isolated position see [`examples/leverage_position.rs`](examples/leverage_position.rs).
+
+For advanced order examples see [`examples/advanced_order.rs`](examples/advanced_order.rs).
+
+For TWAP order placement see [`examples/twap_order.rs`](examples/twap_order.rs).
 
 ## Installation
 

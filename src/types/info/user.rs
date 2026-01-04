@@ -6,9 +6,15 @@ use rust_decimal::{self, Decimal};
 use serde::de::Error as _;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
+use serde_with::{serde_as, DisplayFromStr};
 
 /// Response to "allMids" request type.
-pub type AllMids = HashMap<String, Decimal>;
+#[serde_as]
+#[derive(Debug, Deserialize)]
+pub struct AllMids(
+    #[serde_as(as = "HashMap<_, DisplayFromStr>")]
+    pub HashMap<String, Decimal>
+);
 
 /// Request for "openOrders" request type.
 #[derive(Debug, Serialize)]
@@ -201,7 +207,7 @@ pub struct UserRateLimitsRequest {
 /// Response for "userRateLimit" request type.
 #[derive(Debug, Deserialize)]
 pub struct UserRateLimits {
-    #[serde(rename = "cumVlm")]
+    #[serde(rename = "cumVlm", with = "rust_decimal::serde::str")]
     pub cum_vlm: Decimal,
     /// max(0, `cumulative_used` minus reserved)
     #[serde(rename = "nRequestsUsed")]
@@ -254,7 +260,9 @@ pub enum OrderWithStatus {
 /// Represents a Bid or Ask in the [`L2BookSnapshot`].
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BidOrAsk {
+     #[serde(with = "rust_decimal::serde::str")]
     pub px: rust_decimal::Decimal,
+     #[serde(with = "rust_decimal::serde::str")]
     pub sz: rust_decimal::Decimal,
     pub n: u64,
 }
@@ -395,8 +403,9 @@ pub struct ClearinghouseState {
     pub margin_summary: MarginSummary,
     #[serde(rename = "crossMarginSummary")]
     pub cross_margin_summary: MarginSummary,
-    #[serde(rename = "crossMaintenanceMarginUsed")]
+    #[serde(rename = "crossMaintenanceMarginUsed", with = "rust_decimal::serde::str")]
     pub cross_maintenance_margin_used: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub withdrawable: Decimal,
     #[serde(rename = "assetPositions")]
     pub asset_positions: Vec<AssetPosition>,
@@ -405,13 +414,13 @@ pub struct ClearinghouseState {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MarginSummary {
-    #[serde(rename = "accountValue")]
+    #[serde(rename = "accountValue", with = "rust_decimal::serde::str")]
     pub account_value: Decimal,
-    #[serde(rename = "totalNtlPos")]
+    #[serde(rename = "totalNtlPos", with = "rust_decimal::serde::str")]
     pub total_ntl_pos: Decimal,
-    #[serde(rename = "totalRawUsd")]
+    #[serde(rename = "totalRawUsd", with = "rust_decimal::serde::str")]
     pub total_raw_usd: Decimal,
-    #[serde(rename = "totalMarginUsed")]
+    #[serde(rename = "totalMarginUsed", with = "rust_decimal::serde::str")]
     pub total_margin_used: Decimal,
 }
 
@@ -427,14 +436,21 @@ pub struct AssetPosition {
 #[serde(rename_all = "camelCase")]
 pub struct Position {
     pub coin: String,
-    pub szi: String,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub szi: Decimal,
     pub leverage: Leverage,
-    pub entry_px: String,
-    pub position_value: String,
-    pub unrealized_pnl: String,
-    pub return_on_equity: String,
-    pub liquidation_px: String,
-    pub margin_used: String,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub entry_px: Decimal,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub position_value: Decimal,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub unrealized_pnl: Decimal,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub return_on_equity: Decimal,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub liquidation_px: Decimal,
+ #[serde(with = "rust_decimal::serde::str")]
+    pub margin_used: Decimal,
     pub max_leverage: u32,
     pub cum_funding: CumFunding,
 }
@@ -451,9 +467,12 @@ pub struct Leverage {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CumFunding {
-    pub all_time: String,
-    pub since_open: String,
-    pub since_change: String,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub all_time: Decimal,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub since_open: Decimal,
+     #[serde(with = "rust_decimal::serde::str")]
+    pub since_change: Decimal
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -505,7 +524,11 @@ pub struct PortfolioEntry(
 );
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct HistoryPoint(pub u64, pub Decimal);
+pub struct HistoryPoint(
+    pub u64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub Decimal
+);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FollowerState;
@@ -513,10 +536,10 @@ pub struct FollowerState;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Follower {
     pub user: String,
-    #[serde(rename = "vaultEquity")]
+    #[serde(rename = "vaultEquity", with = "rust_decimal::serde::str")]
     pub vault_equity: Decimal,
     pub pnl: Decimal,
-    #[serde(rename = "allTimePnl")]
+    #[serde(rename = "allTimePnl", with = "rust_decimal::serde::str")]
     pub all_time_pnl: Decimal,
     #[serde(rename = "daysFollowing")]
     pub days_following: u64,
@@ -600,6 +623,7 @@ pub struct HistoryEntry {
     pub account_value_history: Vec<HistoryPoint>,
     #[serde(rename = "pnlHistory")]
     pub pnl_history: Vec<HistoryPoint>,
+    #[serde(with = "rust_decimal::serde::str")]
     pub vlm: Decimal,
 }
 
@@ -627,13 +651,13 @@ pub enum TokenStateEntry {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TokenState {
-    #[serde(rename = "cumVlm")]
+    #[serde(rename = "cumVlm", with = "rust_decimal::serde::str")]
     pub cum_vlm: Decimal,
-    #[serde(rename = "unclaimedRewards")]
+    #[serde(rename = "unclaimedRewards", with = "rust_decimal::serde::str")]
     pub unclaimed_rewards: Decimal,
-    #[serde(rename = "claimedRewards")]
+    #[serde(rename = "claimedRewards", with = "rust_decimal::serde::str")]
     pub claimed_rewards: Decimal,
-    #[serde(rename = "builderRewards")]
+    #[serde(rename = "builderRewards", with = "rust_decimal::serde::str")]
     pub builder_rewards: Decimal,
 }
 
@@ -652,17 +676,18 @@ pub enum ReferrerData {
         referral_states: Vec<ReferralState>,
     },
     NeedToTrade {
+        #[serde(with = "rust_decimal::serde::str")]
         required: Decimal,
     },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ReferralState {
-    #[serde(rename = "cumVlm")]
+    #[serde(rename = "cumVlm", with = "rust_decimal::serde::str")]
     pub cum_vlm: Decimal,
-    #[serde(rename = "cumRewardedFeesSinceReferred")]
+    #[serde(rename = "cumRewardedFeesSinceReferred", with = "rust_decimal::serde::str")]
     pub cum_rewarded_fees_since_referred: Decimal,
-    #[serde(rename = "cumFeesRewardedToReferrer")]
+    #[serde(rename = "cumFeesRewardedToReferrer", with = "rust_decimal::serde::str")]
     pub cum_fees_rewarded_to_referrer: Decimal,
     #[serde(rename = "timeJoined")]
     pub time_joined: u64,
@@ -677,13 +702,13 @@ pub struct RewardHistory; // empty array type
 pub struct UserReferralInformation {
     #[serde(rename = "referredBy")]
     pub referred_by: Option<ReferredBy>,
-    #[serde(rename = "cumVlm")]
+    #[serde(rename = "cumVlm", with = "rust_decimal::serde::str")]
     pub cum_vlm: Decimal, // USDC Only
-    #[serde(rename = "unclaimedRewards")]
+    #[serde(rename = "unclaimedRewards", with = "rust_decimal::serde::str")]
     pub unclaimed_rewards: Decimal, // USDC Only
-    #[serde(rename = "claimedRewards")]
+    #[serde(rename = "claimedRewards", with = "rust_decimal::serde::str")]
     pub claimed_rewards: Decimal, // USDC Only
-    #[serde(rename = "builderRewards")]
+    #[serde(rename = "builderRewards", with = "rust_decimal::serde::str")]
     pub builder_rewards: Decimal, // USDC Only
     #[serde(rename = "tokenToState")]
     pub token_to_state: Vec<TokenStateEntry>,
@@ -696,23 +721,26 @@ pub struct UserReferralInformation {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DailyUserVlm {
     pub date: String,
-    #[serde(rename = "userCross")]
+    #[serde(rename = "userCross", with = "rust_decimal::serde::str")]
     pub user_cross: Decimal,
-    #[serde(rename = "userAdd")]
+    #[serde(rename = "userAdd", with = "rust_decimal::serde::str")]
     pub user_add: Decimal,
+     #[serde(with = "rust_decimal::serde::str")]
     pub exchange: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FeeSchedule {
+    #[serde(with = "rust_decimal::serde::str")]
     pub cross: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub add: Decimal,
-    #[serde(rename = "spotCross")]
+    #[serde(rename = "spotCross", with = "rust_decimal::serde::str")]
     pub spot_cross: Decimal,
-    #[serde(rename = "spotAdd")]
+    #[serde(rename = "spotAdd", with = "rust_decimal::serde::str")]
     pub spot_add: Decimal,
     pub tiers: FeeTiers,
-    #[serde(rename = "referralDiscount")]
+    #[serde(rename = "referralDiscount", with = "rust_decimal::serde::str")]
     pub referral_discount: Decimal,
     #[serde(rename = "stakingDiscountTiers")]
     pub staking_discount_tiers: Vec<StakingDiscount>,
@@ -726,20 +754,23 @@ pub struct FeeTiers {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VipTier {
-    #[serde(rename = "ntlCutoff")]
+    #[serde(rename = "ntlCutoff", with = "rust_decimal::serde::str")]
     pub ntl_cutoff: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub cross: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub add: Decimal,
-    #[serde(rename = "spotCross")]
+    #[serde(rename = "spotCross", with = "rust_decimal::serde::str")]
     pub spot_cross: Decimal,
-    #[serde(rename = "spotAdd")]
+    #[serde(rename = "spotAdd", with = "rust_decimal::serde::str")]
     pub spot_add: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MmTier {
-    #[serde(rename = "makerFractionCutoff")]
+    #[serde(rename = "makerFractionCutoff", with = "rust_decimal::serde::str")]
     pub maker_fraction_cutoff: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub add: Decimal,
 }
 
@@ -753,8 +784,9 @@ pub struct StakingLink {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StakingDiscount {
-    #[serde(rename = "bpsOfMaxSupply")]
+    #[serde(rename = "bpsOfMaxSupply", with = "rust_decimal::serde::str")]
     pub bps_of_max_supply: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub discount: Decimal,
 }
 
@@ -765,20 +797,21 @@ pub struct UserFees {
     pub daily_user_vlm: Vec<DailyUserVlm>,
     #[serde(rename = "feeSchedule")]
     pub fee_schedule: FeeSchedule,
-    #[serde(rename = "userCrossRate")]
+    #[serde(rename = "userCrossRate", with = "rust_decimal::serde::str")]
     pub user_cross_rate: Decimal,
-    #[serde(rename = "userAddRate")]
+    #[serde(rename = "userAddRate", with = "rust_decimal::serde::str")]
     pub user_add_rate: Decimal,
-    #[serde(rename = "userSpotCrossRate")]
+    #[serde(rename = "userSpotCrossRate", with = "rust_decimal::serde::str")]
     pub user_spot_cross_rate: Decimal,
-    #[serde(rename = "userSpotAddRate")]
+    #[serde(rename = "userSpotAddRate", with = "rust_decimal::serde::str")]
     pub user_spot_add_rate: Decimal,
-    #[serde(rename = "activeReferralDiscount")]
+    #[serde(rename = "activeReferralDiscount", with = "rust_decimal::serde::str")]
     pub active_referral_discount: Decimal,
+    #[serde(with = "rust_decimal::serde::str_option")]
     pub trial: Option<Decimal>,
-    #[serde(rename = "feeTrialEscrow")]
+    #[serde(rename = "feeTrialEscrow", with = "rust_decimal::serde::str")]
     pub fee_trial_escrow: Decimal,
-    #[serde(rename = "nextTrialAvailableTimestamp")]
+    #[serde(rename = "nextTrialAvailableTimestamp", with = "rust_decimal::serde::str_option")]
     pub next_trial_available_timestamp: Option<Decimal>,
     #[serde(rename = "stakingLink")]
     pub staking_link: Option<StakingLink>,
@@ -800,17 +833,20 @@ pub type UserStakingDelegations = Vec<StakingDelegation>;
 /// Response for the "delegatorSummary" request type.
 #[derive(Debug, Deserialize)]
 pub struct UserStakingSummary {
+    #[serde(with = "rust_decimal::serde::str")]
     pub delegated: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub undelegated: Decimal,
-    #[serde(rename = "totalPendingWithdrawal")]
+    #[serde(rename = "totalPendingWithdrawal", with = "rust_decimal::serde::str")]
     pub total_pending_withdrawal: Decimal,
     #[serde(rename = "nPendingWithdrawals")]
-    pub n_pending_withdrawals: Decimal,
+    pub n_pending_withdrawals: u32,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Delegate {
     pub validator: String,
+    #[serde(with = "rust_decimal::serde::str")]
     pub amount: Decimal,
     #[serde(rename = "isUndelegate")]
     pub is_undelegate: bool,

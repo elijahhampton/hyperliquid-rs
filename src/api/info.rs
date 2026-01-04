@@ -78,7 +78,10 @@ impl<'client> InfoApi<'client> {
             "dex": json!(dex_param)
         });
 
-        self.post(payload).await
+        let all_mids: AllMids = self.post(payload).await?;
+        let map = all_mids.0;
+
+        Ok(AllMids(map))
     }
 
     /// Retrieves a user's open orders.
@@ -569,10 +572,13 @@ impl<'client> InfoApi<'client> {
         self.post(payload).await
     }
 
-    pub async fn aligned_quote_token_status(&self, user: &str) -> Result<AlignedQuoteTokenInfo> {
+    pub async fn aligned_quote_token_status(
+        &self,
+        token: u32,
+    ) -> Result<Option<AlignedQuoteTokenInfo>> {
         let payload = json!({
             "type": "alignedQuoteTokenInfo",
-            "user": user
+            "token": token
         });
 
         self.post(payload).await

@@ -1,9 +1,21 @@
+mod arguments;
+
+pub use arguments::{CancelOrderByOidCmd, OrderCmd, OrderTypeArg};
+
+#[allow(unused_imports)]
+use crate::types::exchange::OrderRequest;
 use clap::{Parser, Subcommand};
 
 #[derive(Subcommand)]
 pub enum Commands {
+    Order(OrderCmd),
+    Cancel(CancelOrderByOidCmd),
     AllMids {
         #[arg(short, long)]
+        dex: Option<String>,
+    },
+    SubscribeAllMids {
+        #[arg(long)]
         dex: Option<String>,
     },
     OpenOrders {
@@ -52,6 +64,14 @@ pub enum Commands {
         #[arg(short, long)]
         mantissa: Option<u8>,
     },
+    SubscribeL2Book {
+        #[arg(short, long)]
+        coin: String,
+        #[arg(short, long)]
+        n_sig_figs: Option<u8>,
+        #[arg(short, long)]
+        mantissa: Option<u8>,
+    },
     CandleSnapshot {
         #[arg(short, long)]
         coin: String,
@@ -61,6 +81,12 @@ pub enum Commands {
         start_time: u64,
         #[arg(short, long)]
         end_time: u64,
+    },
+    SubscribeCandleSnapshot {
+        #[arg(short, long)]
+        coin: String,
+        #[arg(short, long)]
+        interval: String,
     },
     HistoricalOrders {
         #[arg(short, long)]
@@ -96,13 +122,73 @@ pub enum Commands {
         #[arg(short, long)]
         user: String,
     },
+    SubscribeNotifications {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeWebData3 {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeTwapStates {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeClearinghouseState {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeOpenOrders {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeUserEvents {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeUserFills {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeUserFunding {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeUserNonFundingLedgerUpdates {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeActiveAssetCtx {
+        #[arg(short, long)]
+        coin: String,
+    },
+    SubscribeActiveAssetData {
+        #[arg(short, long)]
+        user: String,
+        #[arg(short, long)]
+        coin: String,
+    },
+    SubscribeUserTwapSliceFills {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeUserTwapHistory {
+        #[arg(short, long)]
+        user: String,
+    },
+    SubscribeBbo {
+        #[arg(short, long)]
+        user: String,
+    },
 }
 
 #[derive(Parser)]
 pub struct Cli {
+    /// Picks a specific network, i.e. 'testnet' or 'mainnet'
     #[arg(short, long)]
     pub network: Option<String>,
 
+    /// Allows CLI to use `HL_PRIVATE_KEY` env var in configuration (requires `HL_PRIVATE_KEY` end var)
     #[arg(short, long)]
     pub allow_signer_key_env: Option<bool>,
 

@@ -34,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get current price to calculate size
     let all_mids = info_api.all_mids(None).await?;
     let default_decimal = Decimal::new(0, 0);
-    let doge_price = all_mids.get(&asset_id).unwrap_or(&default_decimal);
+    let doge_price = all_mids.0.get(&asset_id).unwrap_or(&default_decimal);
     let price_decimal = Decimal::from_str(&doge_price.to_string())?;
 
     // Calculate size: $50 notional / price

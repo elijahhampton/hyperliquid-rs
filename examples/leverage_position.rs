@@ -36,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let btc_ctx = &asset_ctxs
         .get(asset_idx)
         .ok_or(HyperliquidError::Internal("Asset not found".to_string()))?;
-    let mark_price = Decimal::from_str(&btc_ctx.mark_px)?;
+    let mark_price = btc_ctx.mark_px;
 
     tracing::info!("BTC mark price: ${}", mark_price);
 

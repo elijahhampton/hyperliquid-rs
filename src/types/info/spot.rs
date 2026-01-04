@@ -1,19 +1,19 @@
-use rust_decimal::Decimal;
 /// Response types for the info endpoints that are specific to spot.
 /// Additional information for endpoint responses can be found
 /// here: `<https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/spot>`
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EvmContract {
-    address: String,
+    pub address: String,
     #[serde(
         default,
         alias = "evm_extra_wei_decimals",
         alias = "evmExtraWeiDecimals"
     )]
-    evm_extra_wei_decimals: i64,
+    pub evm_extra_wei_decimals: i64,
 }
 
 /// Response type for POST /info with type "spotMeta"
@@ -28,6 +28,7 @@ pub struct SpotToken {
     pub is_canonical: bool,
     pub evm_contract: Option<EvmContract>,
     pub full_name: Option<String>,
+    #[serde(with = "rust_decimal::serde::str")]
     pub deployer_trading_fee_share: Decimal,
 }
 
@@ -51,9 +52,13 @@ pub struct SpotMetadata {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SpotAssetContext {
+    #[serde(with = "rust_decimal::serde::str")]
     pub day_ntl_vlm: Decimal,
+    #[serde(with = "rust_decimal::serde::str_option")]
     pub mark_px: Option<Decimal>,
+    #[serde(with = "rust_decimal::serde::str_option")]
     pub mid_px: Option<Decimal>,
+    #[serde(with = "rust_decimal::serde::str_option")]
     pub prev_day_px: Option<Decimal>,
 }
 
@@ -65,8 +70,11 @@ pub type SpotMetaAndAssetContexts = (SpotMetadata, Vec<SpotAssetContext>);
 pub struct SpotBalance {
     pub coin: String,
     pub token: i64,
+    #[serde(with = "rust_decimal::serde::str")]
     pub hold: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub total: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     pub entry_ntl: Decimal,
 }
 
@@ -106,8 +114,11 @@ pub struct DeployState {
 pub struct GasAuction {
     pub start_time_seconds: u64,
     pub duration_seconds: u64,
+    #[serde(with = "rust_decimal::serde::str")]
     pub start_gas: Decimal,
+    #[serde(with = "rust_decimal::serde::str_option")]
     pub current_gas: Option<Decimal>,
+    #[serde(with = "rust_decimal::serde::str")]
     pub end_gas: Decimal,
 }
 

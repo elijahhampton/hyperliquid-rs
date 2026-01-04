@@ -13,7 +13,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user = user();
 
     subs.subscribe_all_mids(None).await?;
-    subs.subscribe_candle("BTC", "5m".to_string()).await?;
+    subs.subscribe_candle_snapshot("BTC", "5m".to_string())
+        .await?;
     subs.subscribe_l2_book("BTC", None, None).await?;
     subs.subscribe_trades("BTC").await?;
     subs.subscribe_notifications(user.clone()).await?;

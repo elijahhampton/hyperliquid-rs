@@ -52,8 +52,8 @@ pub enum SubscriptionSpec {
     },
     L2Book {
         coin: String,
-        n_sig_figs: Option<u32>,
-        mantissa: Option<u32>,
+        n_sig_figs: Option<u8>,
+        mantissa: Option<u8>,
     },
     Trades {
         coin: String,
@@ -514,7 +514,7 @@ impl SubscriptionClient {
     ///
     /// # Returns
     /// A bounded `tokio::sync::broadcast::Sender`
-    pub async fn subscribe_candle(
+    pub async fn subscribe_candle_snapshot(
         &mut self,
         coin: impl Into<String> + Serialize + Clone,
         interval: String,
@@ -564,8 +564,8 @@ impl SubscriptionClient {
     pub async fn subscribe_l2_book(
         &mut self,
         coin: impl Into<String> + Serialize,
-        n_sig_figs: Option<u32>,
-        mantissa: Option<u32>,
+        n_sig_figs: Option<u8>,
+        mantissa: Option<u8>,
     ) -> Result<()> {
         let coin = coin.into();
         let spec = SubscriptionSpec::L2Book {

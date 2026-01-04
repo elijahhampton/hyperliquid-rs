@@ -1,5 +1,6 @@
 use crate::types::serialize::serialize_chain_id_as_hex;
 use crate::{signature::eip712::Eip712, types::info::perpetual::AssetInfo};
+use clap::ValueEnum;
 
 /// Request and response types for the exchange endpoint used to interact
 /// with and trade on the Hyperliquid chain.
@@ -27,7 +28,7 @@ fn eip_712_domain(chain_id: u64) -> Eip712Domain {
 pub type Cloid = String;
 
 /// Time-in-force for limit orders
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(ValueEnum, Debug, Clone, Serialize, Deserialize)]
 pub enum Tif {
     /// Add liquidity only (post only)
     #[serde(rename = "Alo")]
@@ -57,7 +58,7 @@ pub struct TriggerOrder {
     pub tpsl: Tpsl,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(ValueEnum, Debug, Clone, Serialize, Deserialize)]
 pub enum Tpsl {
     #[serde(rename = "tp")]
     Tp,
@@ -73,6 +74,15 @@ pub enum OrderType {
     Limit(LimitOrder),
     #[serde(rename = "trigger")]
     Trigger(TriggerOrder),
+}
+
+/// Order side, i.e. buy or sell for the order
+#[derive(ValueEnum, Clone, Serialize, Deserialize)]
+pub enum OrderSide {
+    #[serde(rename = "buy")]
+    Buy,
+    #[serde(rename = "sell")]
+    Sell,
 }
 
 /// Builder fee configuration
@@ -133,7 +143,7 @@ impl OrderRequest {
 }
 
 /// Grouping type for orders
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(ValueEnum, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Grouping {
     #[serde(rename = "na")]

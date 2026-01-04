@@ -35,7 +35,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Get current price
     let all_mids = info_api.all_mids(None).await?;
-    let doge_price = all_mids.get(&asset_id).ok_or(HyperliquidError::Internal(
+    let doge_price = all_mids.0.get(&asset_id).ok_or(HyperliquidError::Internal(
         "Missing asset in universe".to_string(),
     ))?;
     let price_decimal = Decimal::from_str(&doge_price.to_string())?;
